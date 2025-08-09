@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import Navigation from '@/components/Navigation'
+import Navigation from '../../../components/Navigation'
 import { 
   ArrowLeft, 
   Eye, 
@@ -12,11 +12,7 @@ import {
   User,
   Tag,
   Send,
-  Heart,
-  Edit,
-  Trash2,
-  X,
-  Check
+  Heart
 } from 'lucide-react'
 
 export default function DiscussionDetailPage() {
@@ -27,8 +23,6 @@ export default function DiscussionDetailPage() {
   const [loading, setLoading] = useState(true)
   const [newComment, setNewComment] = useState('')
   const [liked, setLiked] = useState(false)
-  const [editingComment, setEditingComment] = useState(null)
-  const [editContent, setEditContent] = useState('')
 
   useEffect(() => {
     if (params.id) {
@@ -106,69 +100,6 @@ export default function DiscussionDetailPage() {
     } catch (error) {
       console.error('Error posting comment:', error)
       alert('댓글 작성 중 오류가 발생했습니다.')
-    }
-  }
-
-  const handleEditComment = (comment) => {
-    setEditingComment(comment.id)
-    setEditContent(comment.content)
-  }
-
-  const handleUpdateComment = async (commentId) => {
-    if (!editContent.trim()) return
-
-    try {
-      const response = await fetch(`/api/discussions/${discussion.id}/comments/${commentId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          content: editContent,
-          authorId: '2' // 임시로 고정된 사용자 ID 사용
-        })
-      })
-
-      if (response.ok) {
-        const updatedComment = await response.json()
-        setComments(comments.map(c => c.id === commentId ? updatedComment : c))
-        setEditingComment(null)
-        setEditContent('')
-      } else {
-        const error = await response.json()
-        alert(error.error || '댓글 수정에 실패했습니다.')
-      }
-    } catch (error) {
-      console.error('Error updating comment:', error)
-      alert('댓글 수정 중 오류가 발생했습니다.')
-    }
-  }
-
-  const handleDeleteComment = async (commentId) => {
-    if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) return
-
-    try {
-      const response = await fetch(`/api/discussions/${discussion.id}/comments/${commentId}?authorId=2`, {
-        method: 'DELETE'
-      })
-
-      if (response.ok) {
-        setComments(comments.filter(c => c.id !== commentId))
-        setDiscussion(prev => ({
-          ...prev,
-          comments: Math.max(0, prev.comments - 1)
-        }))
-        if (editingComment === commentId) {
-          setEditingComment(null)
-          setEditContent('')
-        }
-      } else {
-        const error = await response.json()
-        alert(error.error || '댓글 삭제에 실패했습니다.')
-      }
-    } catch (error) {
-      console.error('Error deleting comment:', error)
-      alert('댓글 삭제 중 오류가 발생했습니다.')
     }
   }
 
@@ -318,90 +249,29 @@ export default function DiscussionDetailPage() {
                 <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-600">아직 댓글이 없습니다. 첫 번째 댓글을 작성해보세요!</p>
               </div>
-                         ) : (
-               comments.map((comment) => (
-                 <div key={comment.id} className="border-b border-gray-100 pb-6 last:border-b-0">
-                   <div className="flex items-start space-x-3">
-                     <div className="flex-1">
-                       <div className="flex items-center justify-between mb-2">
-                         <div className="flex items-center space-x-2">
-                           <span className="font-medium text-gray-900">{comment.authorName}</span>
-                           <span className="text-sm text-gray-500">
-                             {new Date(comment.createdAt).toLocaleDateString('ko-KR', {
-                               year: 'numeric',
-                               month: 'long',
-                               day: 'numeric',
-                               hour: '2-digit',
-                               minute: '2-digit'
-                             })}
-                           </span>
-                           {comment.updatedAt && (
-                             <span className="text-xs text-gray-400">(수정됨)</span>
-                           )}
-                         </div>
-                         
-                         {/* 댓글 작성자만 수정/삭제 버튼 표시 */}
-                         {comment.authorId === '2' && (
-                           <div className="flex items-center space-x-2">
-                             {editingComment === comment.id ? (
-                               <>
-                                 <button
-                                   onClick={() => handleUpdateComment(comment.id)}
-                                   className="text-green-600 hover:text-green-800 p-1"
-                                   title="저장"
-                                 >
-                                   <Check className="w-4 h-4" />
-                                 </button>
-                                 <button
-                                   onClick={() => {
-                                     setEditingComment(null)
-                                     setEditContent('')
-                                   }}
-                                   className="text-gray-600 hover:text-gray-800 p-1"
-                                   title="취소"
-                                 >
-                                   <X className="w-4 h-4" />
-                                 </button>
-                               </>
-                             ) : (
-                               <>
-                                 <button
-                                   onClick={() => handleEditComment(comment)}
-                                   className="text-blue-600 hover:text-blue-800 p-1"
-                                   title="수정"
-                                 >
-                                   <Edit className="w-4 h-4" />
-                                 </button>
-                                 <button
-                                   onClick={() => handleDeleteComment(comment.id)}
-                                   className="text-red-600 hover:text-red-800 p-1"
-                                   title="삭제"
-                                 >
-                                   <Trash2 className="w-4 h-4" />
-                                 </button>
-                               </>
-                             )}
-                           </div>
-                         )}
-                       </div>
-                       
-                       {editingComment === comment.id ? (
-                         <div className="space-y-2">
-                           <textarea
-                             value={editContent}
-                             onChange={(e) => setEditContent(e.target.value)}
-                             rows={3}
-                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-                           />
-                         </div>
-                       ) : (
-                         <p className="text-gray-700 whitespace-pre-wrap">{comment.content}</p>
-                       )}
-                     </div>
-                   </div>
-                 </div>
-               ))
-             )}
+            ) : (
+              comments.map((comment) => (
+                <div key={comment.id} className="border-b border-gray-100 pb-6 last:border-b-0">
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <span className="font-medium text-gray-900">{comment.authorName}</span>
+                        <span className="text-sm text-gray-500">
+                          {new Date(comment.createdAt).toLocaleDateString('ko-KR', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
+                      </div>
+                      <p className="text-gray-700 whitespace-pre-wrap">{comment.content}</p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

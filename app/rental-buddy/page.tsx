@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import Navigation from '@/components/Navigation'
+import React from 'react'
+import Navigation from '../../components/Navigation'
 import { Heart, Star, MapPin, Clock, Shield, UserCheck, MessageCircle } from 'lucide-react'
 
 export default function RentalBuddy() {

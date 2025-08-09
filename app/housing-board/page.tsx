@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Navigation from '@/components/Navigation'
+import Navigation from '../../components/Navigation'
 import { Plus, MapPin, DollarSign, Calendar, Users, Filter, Search, Heart } from 'lucide-react'
 
 export default function HousingBoard() {
