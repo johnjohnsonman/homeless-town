@@ -10,8 +10,5 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  experimental: {
-    ignorePostcssImportWarnings: true,
-  },
 };
 module.exports = nextConfig;
