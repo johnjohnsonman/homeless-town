@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import Navigation from '@/components/Navigation'
+import Navigation from './components/Navigation'
 import { FileText, Users, Heart, MessageCircle, Star, Shield, Coffee, Download, Search, TrendingUp, Clock, ThumbsUp, MapPin, Home as HomeIcon, Calculator, BookOpen, AlertCircle, CheckCircle } from 'lucide-react'
 
 export default function Home() {
