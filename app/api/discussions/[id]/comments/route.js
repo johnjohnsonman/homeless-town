@@ -1,4 +1,4 @@
-import { readJsonFile, writeJsonFile, generateId, getCurrentTime, findUserById } from '../../../../../../lib/data'
+import { readJsonFile, writeJsonFile, generateId, getCurrentTime, findUserById } from '@/lib/data'
 
 // GET: 특정 토론글의 댓글 목록 조회
 export async function GET(request, { params }) {

@@ -1,8 +1,8 @@
 'use client'
 
-import React from 'react'
-import Navigation from '../../components/Navigation'
-import { Heart, Star, MapPin, Clock, Shield, UserCheck, MessageCircle } from 'lucide-react'
+import { useState } from 'react'
+import Navigation from '@/components/Navigation'
+import { Users, MapPin, MessageSquare, Filter, Search, Star, Clock, Heart, CheckCircle, AlertCircle } from 'lucide-react'
 
 export default function RentalBuddy() {
   const [selectedService, setSelectedService] = useState('all')

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import Navigation from '../../components/Navigation'
+import Navigation from '@/components/Navigation'
 import { 
   MessageCircle, 
   Plus, 

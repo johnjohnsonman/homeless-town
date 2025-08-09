@@ -1,4 +1,4 @@
-import Navigation from '../../components/Navigation'
+import Navigation from '@/components/Navigation'
 import { AlertCircle, CheckCircle, Book, Users, Clock, DollarSign } from 'lucide-react'
 
 export default function ContractGuide() {
