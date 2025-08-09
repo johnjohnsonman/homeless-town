@@ -1,0 +1,115 @@
+{
+  "discussions": [
+    {
+      "id": "1",
+      "title": "보증금 반환 받은 경험 공유",
+      "content": "집주인이 보증금을 안 주려고 해서 고생했던 경험을 공유합니다. 입주할 때 사진을 꼭 찍어두세요!",
+      "authorId": "2",
+      "authorName": "임차인A",
+      "category": "보증금",
+      "views": 1247,
+      "likes": 156,
+      "comments": 89,
+      "status": "active",
+      "createdAt": "2024-01-14T16:20:00Z",
+      "updatedAt": "2024-01-14T16:20:00Z"
+    },
+    {
+      "id": "2",
+      "title": "집주인과 갈등 해결 방법",
+      "content": "집주인과 갈등이 생겼을 때 어떻게 해결하셨나요? 법적 대응 방법도 알려주세요.",
+      "authorId": "3",
+      "authorName": "임차인B",
+      "category": "분쟁해결",
+      "views": 892,
+      "likes": 134,
+      "comments": 67,
+      "status": "active",
+      "createdAt": "2024-01-14T17:30:00Z",
+      "updatedAt": "2024-01-14T17:30:00Z"
+    },
+    {
+      "id": "3",
+      "title": "월세 vs 전세 어떤 게 좋을까요?",
+      "content": "처음 이사하는데 월세와 전세 중 어떤 것이 더 좋을까요? 각각의 장단점을 알려주세요.",
+      "authorId": "2",
+      "authorName": "임차인C",
+      "category": "계약",
+      "views": 567,
+      "likes": 78,
+      "comments": 45,
+      "status": "active",
+      "createdAt": "2024-01-14T18:00:00Z",
+      "updatedAt": "2024-01-14T18:00:00Z"
+    },
+    {
+      "id": "4",
+      "title": "입주 시 체크해야 할 사항들",
+      "content": "입주할 때 꼭 체크해야 할 사항들을 정리해보았습니다. 누락된 부분이 있으면 댓글로 알려주세요!",
+      "authorId": "3",
+      "authorName": "임차인D",
+      "category": "입주",
+      "views": 445,
+      "likes": 67,
+      "comments": 34,
+      "status": "active",
+      "createdAt": "2024-01-14T19:00:00Z",
+      "updatedAt": "2024-01-14T19:00:00Z"
+    },
+    {
+      "id": "1754271413974gb9h23kkk",
+      "title": "안녕하세요 ",
+      "content": "ㅎㅎㅎ",
+      "authorId": "2",
+      "authorName": "김철수",
+      "category": "보증금",
+      "views": 0,
+      "likes": 0,
+      "comments": 0,
+      "status": "active",
+      "createdAt": "2025-08-04T01:36:53.974Z",
+      "updatedAt": "2025-08-04T01:36:53.974Z"
+    },
+    {
+      "id": "17542718188887cjojr5hv",
+      "title": "좋은 공간이네요 부동산은 올라갈까요 떨어질까요 ",
+      "content": "전 지역이나 아파트마다 다를 것 같아요 ",
+      "authorId": "2",
+      "authorName": "김철수",
+      "category": "기타",
+      "views": 8,
+      "likes": 1,
+      "comments": 1,
+      "status": "active",
+      "createdAt": "2025-08-04T01:43:38.888Z",
+      "updatedAt": "2025-08-04T01:43:38.888Z"
+    }
+  ],
+  "comments": [
+    {
+      "id": "1",
+      "discussionId": "1",
+      "authorId": "3",
+      "authorName": "임차인B",
+      "content": "저도 비슷한 경험이 있어요. 입주할 때 모든 방의 사진을 찍어두는 게 정말 중요해요!",
+      "createdAt": "2024-01-14T17:30:00Z"
+    },
+    {
+      "id": "2",
+      "discussionId": "1",
+      "authorId": "2",
+      "authorName": "임차인A",
+      "content": "네, 맞습니다. 비디오도 함께 찍어두시면 더 좋아요.",
+      "createdAt": "2024-01-14T18:00:00Z"
+    },
+    {
+      "id": "1754271835371zebsthkee",
+      "discussionId": "17542718188887cjojr5hv",
+      "authorId": "2",
+      "authorName": "김철수",
+      "content": "ㅎㅎㅎ",
+      "createdAt": "2025-08-04T01:43:55.371Z",
+      "updatedAt": "2025-08-04T01:47:25.520Z"
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "posts": [
+    {
+      "id": "1",
+      "title": "강남역 근처 원룸 구합니다",
+      "content": "1인가구 원룸 구합니다. 월세 80만원 이하로 깔끔하고 안전한 곳 원해요. 강남역 도보 10분 이내, 역세권이면 더 좋습니다.",
+      "authorId": "2",
+      "authorName": "김철수",
+      "location": "강남구",
+      "budget": "월 80만원",
+      "type": "원룸",
+      "urgent": true,
+      "status": "active",
+      "views": 45,
+      "createdAt": "2024-01-15T14:30:00Z",
+      "updatedAt": "2024-01-15T14:30:00Z"
+    },
+    {
+      "id": "2",
+      "title": "홍대입구역 1인가구 월세",
+      "content": "홍대입구역 근처 원룸 구합니다. 예술의전당 근처면 더 좋고, 창문이 있는 곳이면 좋겠어요.",
+      "authorId": "3",
+      "authorName": "이영희",
+      "location": "마포구",
+      "budget": "월 60만원",
+      "type": "원룸",
+      "urgent": false,
+      "status": "active",
+      "views": 23,
+      "createdAt": "2024-01-15T15:00:00Z",
+      "updatedAt": "2024-01-15T15:00:00Z"
+    },
+    {
+      "id": "3",
+      "title": "잠실역 근처 2인가구",
+      "content": "커플이 살 2인가구 방 구합니다. 잠실역 근처, 투룸이나 원룸+1 형태면 좋겠어요.",
+      "authorId": "2",
+      "authorName": "김철수",
+      "location": "송파구",
+      "budget": "월 120만원",
+      "type": "투룸",
+      "urgent": true,
+      "status": "active",
+      "views": 67,
+      "createdAt": "2024-01-15T16:00:00Z",
+      "updatedAt": "2024-01-15T16:00:00Z"
+    },
+    {
+      "id": "4",
+      "title": "분당 정자동 신축 아파트",
+      "content": "분당 정자동 신축 아파트 구합니다. 2-3인가구용, 주차 가능한 곳이면 좋겠어요.",
+      "authorId": "3",
+      "authorName": "이영희",
+      "location": "성남시",
+      "budget": "월 150만원",
+      "type": "아파트",
+      "urgent": false,
+      "status": "active",
+      "views": 34,
+      "createdAt": "2024-01-15T17:00:00Z",
+      "updatedAt": "2024-01-15T17:00:00Z"
+    }
+  ]
+} 

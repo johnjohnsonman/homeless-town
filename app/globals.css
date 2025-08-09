@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-inter: 'Inter', system-ui, sans-serif;
+    --font-playfair: 'Playfair Display', serif;
+  }
+  
+  body {
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-warm-500 hover:bg-warm-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-soft hover:shadow-medium;
+  }
+  
+  .btn-secondary {
+    @apply bg-white hover:bg-pastel-cream text-warm-700 px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-soft border border-warm-200;
+  }
+  
+  .card {
+    @apply bg-white rounded-2xl shadow-soft p-6 transition-all duration-200 hover:shadow-medium;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl border border-warm-200 focus:border-warm-400 focus:ring-2 focus:ring-warm-100 outline-none transition-all duration-200;
+  }
+  
+  .text-gradient {
+    @apply bg-gradient-to-r from-warm-600 to-warm-800 bg-clip-text text-transparent;
+  }
+}
