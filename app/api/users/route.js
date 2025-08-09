@@ -1,4 +1,4 @@
-import { readJsonFile } from '@/lib/data'
+import { readJsonFile } from '../../../lib/data'
 
 // GET: 사용자 목록 조회 (관리자용)
 export async function GET() {

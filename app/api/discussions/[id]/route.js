@@ -1,4 +1,4 @@
-import { readJsonFile, writeJsonFile } from '@/lib/data'
+import { readJsonFile, writeJsonFile } from '../../../../lib/data'
 
 // GET: 특정 토론글 상세 조회
 export async function GET(request, { params }) {

@@ -1,4 +1,4 @@
-import { readJsonFile, writeJsonFile } from '@/lib/data'
+import { readJsonFile, writeJsonFile } from '../../../../lib/data'
 
 // POST: 토론글 좋아요/좋아요 취소
 export async function POST(request, { params }) {

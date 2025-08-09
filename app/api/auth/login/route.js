@@ -1,4 +1,4 @@
-import { authenticateUser, findUserById } from '@/lib/data'
+import { authenticateUser, findUserById } from '../../../lib/data'
 
 export async function POST(request) {
   try {

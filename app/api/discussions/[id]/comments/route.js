@@ -1,4 +1,4 @@
-import { readJsonFile, writeJsonFile, generateId, getCurrentTime, findUserById } from '@/lib/data'
+import { readJsonFile, writeJsonFile, generateId, getCurrentTime, findUserById } from '../../../../lib/data'
 
 // GET: 특정 토론글의 댓글 목록 조회
 export async function GET(request, { params }) {
@@ -46,27 +46,23 @@ export async function POST(request, { params }) {
       return Response.json({ error: '데이터를 불러올 수 없습니다.' }, { status: 500 })
     }
     
-    // 토론글 존재 확인
-    const discussion = data.discussions.find(d => d.id === id)
-    if (!discussion) {
-      return Response.json({ error: '토론글을 찾을 수 없습니다.' }, { status: 404 })
-    }
-    
     const newComment = {
       id: generateId(),
       discussionId: id,
       authorId,
       authorName: author.name,
       content,
-      createdAt: getCurrentTime(),
-      updatedAt: null
+      createdAt: getCurrentTime()
     }
     
     // 댓글 추가
     data.comments.push(newComment)
     
     // 토론글의 댓글 수 증가
-    discussion.comments += 1
+    const discussion = data.discussions.find(d => d.id === id)
+    if (discussion) {
+      discussion.comments += 1
+    }
     
     writeJsonFile('discussions.json', data)
     
