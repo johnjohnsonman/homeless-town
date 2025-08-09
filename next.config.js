@@ -7,15 +7,6 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // 정적 내보내기 명시적 차단
-  trailingSlash: false,
-  generateBuildId: async () => {
-    return 'build-' + Date.now();
-  },
-  // 정적 내보내기 경로 맵 비활성화
-  exportPathMap: async function () {
-    return {};
-  },
 };
 
 module.exports = nextConfig;
