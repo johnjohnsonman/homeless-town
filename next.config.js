@@ -15,6 +15,5 @@ const nextConfig = {
   },
   optimizeFonts: false,
   swcMinify: true,
-  output: 'standalone',
 };
 module.exports = nextConfig;
