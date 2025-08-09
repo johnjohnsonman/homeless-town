@@ -1,4 +1,4 @@
-import { readJsonFile, writeJsonFile, getCurrentTime } from '../../../../../lib/data'
+import { readJsonFile, writeJsonFile, getCurrentTime } from '../../../../../../lib/data'
 
 // PUT: 댓글 수정
 export async function PUT(request, { params }) {
