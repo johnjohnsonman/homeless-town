@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Navigation from '@/components/Navigation'
-import { Users, MapPin, MessageSquare, Filter, Search, Star, Clock, Heart, CheckCircle, AlertCircle } from 'lucide-react'
+import { Users, MapPin, MessageSquare, Filter, Search, Star, Clock, Heart, CheckCircle, AlertCircle, Shield, UserCheck, MessageCircle } from 'lucide-react'
 
 export default function RentalBuddy() {
   const [selectedService, setSelectedService] = useState('all')
