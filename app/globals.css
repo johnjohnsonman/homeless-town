@@ -4,33 +4,43 @@
 
 @layer base {
   :root {
-    --font-inter: 'Inter', system-ui, sans-serif;
-    --font-playfair: 'Playfair Display', serif;
+    --font-pretendard: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
   }
   
   body {
+    font-family: var(--font-pretendard);
     font-feature-settings: 'rlig' 1, 'calt' 1;
+    background-color: #F7F1E6;
+    color: #24324A;
+  }
+
+  a {
+    color: #2F4D78;
+  }
+
+  a:hover {
+    text-decoration: underline;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-warm-500 hover:bg-warm-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-soft hover:shadow-medium;
+    @apply bg-brand-accent hover:bg-brand-accent700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-soft hover:shadow-medium;
   }
   
   .btn-secondary {
-    @apply bg-white hover:bg-pastel-cream text-warm-700 px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-soft border border-warm-200;
+    @apply bg-brand-card hover:bg-brand-surface text-brand-ink px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-soft border border-brand-border;
   }
   
   .card {
-    @apply bg-white rounded-2xl shadow-soft p-6 transition-all duration-200 hover:shadow-medium;
+    @apply bg-brand-card rounded-2xl shadow-soft p-6 transition-all duration-200 hover:shadow-medium border border-brand-border;
   }
   
   .input-field {
-    @apply w-full px-4 py-3 rounded-xl border border-warm-200 focus:border-warm-400 focus:ring-2 focus:ring-warm-100 outline-none transition-all duration-200;
+    @apply w-full px-4 py-3 rounded-xl border border-brand-border focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all duration-200;
   }
   
   .text-gradient {
-    @apply bg-gradient-to-r from-warm-600 to-warm-800 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-brand-accent to-brand-accent700 bg-clip-text text-transparent;
   }
 }

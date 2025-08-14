@@ -68,13 +68,13 @@ export default function RentalBuddy() {
       <Navigation />
       
       {/* Header */}
-      <section className="bg-gradient-to-br from-pastel-lavender via-pastel-blue to-pastel-mint py-16">
+      <section className="bg-gradient-to-br from-brand-bg via-brand-card to-brand-surface py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl font-display font-bold text-warm-900 mb-4">
+            <h1 className="text-4xl md:text-5xl font-display font-bold text-brand-ink mb-4">
               임대 버디 서비스
             </h1>
-            <p className="text-xl text-warm-700 leading-relaxed max-w-3xl mx-auto">
+            <p className="text-xl text-brand-muted leading-relaxed max-w-3xl mx-auto">
               부동산 시찰과 계약 서명 시 함께할 신뢰할 수 있는 동반자를 찾으세요. 임대 과정을 혼자서 탐색하지 마세요.
             </p>
           </div>
@@ -92,38 +92,38 @@ export default function RentalBuddy() {
       </section>
 
       {/* Trust & Safety */}
-      <section className="py-12 bg-white border-b border-warm-100">
+      <section className="py-12 bg-brand-surface border-b border-brand-border">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div className="flex flex-col items-center">
-              <div className="w-12 h-12 bg-gradient-to-r from-warm-400 to-warm-600 rounded-xl flex items-center justify-center mb-3">
+              <div className="w-12 h-12 bg-gradient-to-r from-brand-accent to-brand-accent700 rounded-xl flex items-center justify-center mb-3">
                 <Shield className="w-6 h-6 text-white" />
               </div>
-              <h3 className="font-semibold text-warm-900 mb-2">인증된 버디</h3>
-              <p className="text-warm-600 text-sm">모든 버디는 신원 조회와 인증을 거칩니다</p>
+              <h3 className="font-semibold text-brand-ink mb-2">인증된 버디</h3>
+              <p className="text-brand-muted text-sm">모든 버디는 신원 조회와 인증을 거칩니다</p>
             </div>
             
             <div className="flex flex-col items-center">
-              <div className="w-12 h-12 bg-gradient-to-r from-warm-400 to-warm-600 rounded-xl flex items-center justify-center mb-3">
+              <div className="w-12 h-12 bg-gradient-to-r from-brand-accent to-brand-accent700 rounded-xl flex items-center justify-center mb-3">
                 <Star className="w-6 h-6 text-white" />
               </div>
-              <h3 className="font-semibold text-warm-900 mb-2">평점 및 리뷰</h3>
-              <p className="text-warm-600 text-sm">서비스를 이용한 임차인들의 실제 리뷰</p>
+              <h3 className="font-semibold text-brand-ink mb-2">평점 및 리뷰</h3>
+              <p className="text-brand-muted text-sm">서비스를 이용한 임차인들의 실제 리뷰</p>
             </div>
             
             <div className="flex flex-col items-center">
-              <div className="w-12 h-12 bg-gradient-to-r from-warm-400 to-warm-600 rounded-xl flex items-center justify-center mb-3">
+              <div className="w-12 h-12 bg-gradient-to-r from-brand-accent to-brand-accent700 rounded-xl flex items-center justify-center mb-3">
                 <Heart className="w-6 h-6 text-white" />
               </div>
-              <h3 className="font-semibold text-warm-900 mb-2">커뮤니티 주도</h3>
-              <p className="text-warm-600 text-sm">임차인들이 임차인들을 위해 진심으로 만든 서비스</p>
+              <h3 className="font-semibold text-brand-ink mb-2">커뮤니티 주도</h3>
+              <p className="text-brand-muted text-sm">임차인들이 임차인들을 위해 진심으로 만든 서비스</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Service Filter */}
-      <section className="py-8 bg-pastel-warm border-b border-warm-100">
+      <section className="py-8 bg-brand-card border-b border-brand-border">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap gap-3 justify-center">
             {serviceTypes.map(service => (
@@ -132,8 +132,8 @@ export default function RentalBuddy() {
                 onClick={() => setSelectedService(service.value)}
                 className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                   selectedService === service.value
-                    ? 'bg-warm-500 text-white shadow-soft'
-                    : 'bg-white text-warm-700 hover:bg-pastel-cream'
+                    ? 'bg-brand-accent text-white shadow-soft'
+                    : 'bg-brand-surface text-brand-ink hover:bg-brand-card'
                 }`}
               >
                 {service.label}
@@ -144,7 +144,7 @@ export default function RentalBuddy() {
       </section>
 
       {/* Buddies List */}
-      <section className="py-12 bg-pastel-warm">
+      <section className="py-12 bg-brand-card">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="space-y-6">
             {buddies.map((buddy) => (
@@ -152,23 +152,23 @@ export default function RentalBuddy() {
                 <div className="flex flex-col lg:flex-row gap-6">
                   {/* Avatar & Basic Info */}
                   <div className="flex flex-col items-center lg:items-start lg:w-48">
-                    <div className="w-20 h-20 bg-gradient-to-r from-warm-400 to-warm-600 rounded-full flex items-center justify-center text-white text-xl font-bold mb-3">
+                    <div className="w-20 h-20 bg-gradient-to-r from-brand-accent to-brand-accent700 rounded-full flex items-center justify-center text-white text-xl font-bold mb-3">
                       {buddy.avatar}
                     </div>
-                    <h3 className="text-xl font-semibold text-warm-900 mb-1 text-center lg:text-left">
+                    <h3 className="text-xl font-semibold text-brand-ink mb-1 text-center lg:text-left">
                       {buddy.name}
                     </h3>
-                    <p className="text-warm-600 text-sm mb-2">{buddy.experience}</p>
+                    <p className="text-brand-muted text-sm mb-2">{buddy.experience}</p>
                     <div className="flex items-center mb-2">
                       <div className="flex items-center">
                         {[...Array(5)].map((_, i) => (
                           <Star 
                             key={i} 
-                            className={`w-4 h-4 ${i < Math.floor(buddy.rating) ? 'text-warm-400 fill-current' : 'text-warm-200'}`} 
+                            className={`w-4 h-4 ${i < Math.floor(buddy.rating) ? 'text-brand-accent fill-current' : 'text-brand-border'}`} 
                           />
                         ))}
                       </div>
-                      <span className="text-sm text-warm-600 ml-2">
+                      <span className="text-sm text-brand-muted ml-2">
                         {buddy.rating} ({buddy.reviews} 리뷰)
                       </span>
                     </div>
@@ -182,35 +182,35 @@ export default function RentalBuddy() {
 
                   {/* Main Content */}
                   <div className="flex-1">
-                    <p className="text-warm-700 leading-relaxed mb-4">
+                    <p className="text-brand-muted leading-relaxed mb-4">
                       {buddy.about}
                     </p>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div>
-                        <h4 className="font-medium text-warm-900 mb-2 flex items-center">
+                        <h4 className="font-medium text-brand-ink mb-2 flex items-center">
                           <MapPin className="w-4 h-4 mr-2" />
                           서비스 지역
                         </h4>
-                        <p className="text-sm text-warm-600">{buddy.location}</p>
+                        <p className="text-sm text-brand-muted">{buddy.location}</p>
                       </div>
                       
                       <div>
-                        <h4 className="font-medium text-warm-900 mb-2 flex items-center">
+                        <h4 className="font-medium text-brand-ink mb-2 flex items-center">
                           <Clock className="w-4 h-4 mr-2" />
                           이용 가능 시간
                         </h4>
-                        <p className="text-sm text-warm-600">{buddy.availability}</p>
+                        <p className="text-sm text-brand-muted">{buddy.availability}</p>
                       </div>
                     </div>
                     
                     <div className="mb-4">
-                      <h4 className="font-medium text-warm-900 mb-2">전문 분야</h4>
+                      <h4 className="font-medium text-brand-ink mb-2">전문 분야</h4>
                       <div className="flex flex-wrap gap-2">
                         {buddy.specialties.map((specialty, index) => (
                           <span 
                             key={index}
-                            className="px-3 py-1 bg-pastel-blue text-warm-700 rounded-full text-sm"
+                            className="px-3 py-1 bg-brand-card text-brand-ink rounded-full text-sm"
                           >
                             {specialty}
                           </span>
@@ -219,12 +219,12 @@ export default function RentalBuddy() {
                     </div>
                     
                     <div className="mb-4">
-                      <h4 className="font-medium text-warm-900 mb-2">제공 서비스</h4>
+                      <h4 className="font-medium text-brand-ink mb-2">제공 서비스</h4>
                       <div className="flex flex-wrap gap-2">
                         {buddy.services.map((service, index) => (
                           <span 
                             key={index}
-                            className="px-3 py-1 bg-warm-100 text-warm-700 rounded-full text-sm"
+                            className="px-3 py-1 bg-brand-card text-brand-ink rounded-full text-sm"
                           >
                             {service}
                           </span>
@@ -233,8 +233,8 @@ export default function RentalBuddy() {
                     </div>
                     
                     <div>
-                      <h4 className="font-medium text-warm-900 mb-2">언어</h4>
-                      <p className="text-sm text-warm-600">{buddy.languages.join(', ')}</p>
+                      <h4 className="font-medium text-brand-ink mb-2">언어</h4>
+                      <p className="text-sm text-brand-muted">{buddy.languages.join(', ')}</p>
                     </div>
                   </div>
 
@@ -247,7 +247,7 @@ export default function RentalBuddy() {
                       <MessageCircle className="w-4 h-4 mr-2" />
                       메시지 보내기
                     </button>
-                    <button className="w-full text-warm-600 hover:text-warm-800 transition-colors text-sm">
+                    <button className="w-full text-brand-muted hover:text-brand-ink transition-colors text-sm">
                       리뷰 보기
                     </button>
                   </div>
@@ -259,13 +259,13 @@ export default function RentalBuddy() {
       </section>
 
       {/* How It Works */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-brand-surface">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-display font-bold text-warm-900 mb-4">
+            <h2 className="text-3xl font-display font-bold text-brand-ink mb-4">
               임대 버디가 작동하는 방법
             </h2>
-            <p className="text-lg text-warm-600 max-w-2xl mx-auto">
+            <p className="text-lg text-brand-muted max-w-2xl mx-auto">
               임대 여정에 대한 지원을 받는 것은 간단하고 안전합니다
             </p>
           </div>
@@ -278,11 +278,11 @@ export default function RentalBuddy() {
               { step: 4, title: "완료 및 리뷰", description: "미래의 임차인들을 돕기 위해 리뷰를 남기세요" }
             ].map((item) => (
               <div key={item.step} className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-r from-warm-400 to-warm-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-gradient-to-r from-brand-accent to-brand-accent700 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <span className="text-2xl font-bold text-white">{item.step}</span>
                 </div>
-                <h3 className="text-lg font-semibold text-warm-900 mb-2">{item.title}</h3>
-                <p className="text-warm-600 text-sm leading-relaxed">{item.description}</p>
+                <h3 className="text-lg font-semibold text-brand-ink mb-2">{item.title}</h3>
+                <p className="text-brand-muted text-sm leading-relaxed">{item.description}</p>
               </div>
             ))}
           </div>
@@ -290,19 +290,19 @@ export default function RentalBuddy() {
       </section>
 
       {/* Become a Buddy CTA */}
-      <section className="py-20 bg-gradient-to-r from-warm-500 to-warm-600">
+      <section className="py-20 bg-gradient-to-r from-brand-accent to-brand-accent700">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-display font-bold text-white mb-4">
             다른 임차인들을 도우고 싶으신가요?
           </h2>
-          <p className="text-xl text-warm-100 mb-8">
+          <p className="text-xl text-white/90 mb-8">
             임대 버디 커뮤니티에 참여하고 동료 임차인들이 자신 있게 여정을 탐색할 수 있도록 돕는 동시에 수입을 얻으세요.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-white text-warm-600 px-8 py-4 rounded-xl font-semibold hover:bg-pastel-cream transition-colors duration-200">
+            <button className="bg-white text-brand-accent px-8 py-4 rounded-xl font-semibold hover:bg-brand-card transition-colors duration-200">
               버디 지원하기
             </button>
-            <button className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-warm-600 transition-all duration-200">
+            <button className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-brand-accent transition-all duration-200">
               자세히 알아보기
             </button>
           </div>
