@@ -89,32 +89,6 @@ const Navigation = () => {
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center space-x-4">
-            {isAuthenticated ? (
-              <>
-                <Link
-                  href="/admin"
-                  className="flex items-center space-x-1 bg-brand-surface text-brand-ink px-3 py-2 rounded-lg hover:bg-brand-card transition-colors duration-200 border border-brand-border"
-                >
-                  <User className="w-4 h-4" />
-                  <span className="font-medium text-sm">관리자</span>
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center space-x-1 bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span className="font-medium text-sm">로그아웃</span>
-                </button>
-              </>
-            ) : (
-              <Link
-                href="/login"
-                className="flex items-center space-x-1 bg-brand-accent text-white px-3 py-2 rounded-lg hover:bg-brand-accent700 transition-colors duration-200"
-              >
-                <LogIn className="w-4 h-4" />
-                <span className="font-medium text-sm">로그인</span>
-              </Link>
-            )}
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="text-brand-ink hover:text-brand-accent transition-colors duration-200"
@@ -128,7 +102,8 @@ const Navigation = () => {
         {isOpen && (
           <div className="md:hidden bg-brand-card border-t border-brand-border">
             <div className="px-4 py-3">
-              <div className="grid grid-cols-2 gap-2">
+              {/* Navigation Links */}
+              <div className="grid grid-cols-2 gap-2 mb-4">
                 {navigation.map((item) => {
                   const Icon = item.icon
                   return (
@@ -143,6 +118,41 @@ const Navigation = () => {
                     </Link>
                   )
                 })}
+              </div>
+              
+              {/* Auth Buttons */}
+              <div className="border-t border-brand-border pt-4">
+                {isAuthenticated ? (
+                  <div className="space-y-2">
+                    <Link
+                      href="/admin"
+                      className="flex items-center justify-center space-x-2 bg-brand-surface text-brand-ink px-3 py-3 rounded-lg hover:bg-brand-card transition-colors duration-200 border border-brand-border"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <User className="w-4 h-4" />
+                      <span className="font-medium">관리자</span>
+                    </Link>
+                    <button
+                      onClick={() => {
+                        handleLogout()
+                        setIsOpen(false)
+                      }}
+                      className="w-full flex items-center justify-center space-x-2 bg-red-500 text-white px-3 py-3 rounded-lg hover:bg-red-600 transition-colors duration-200"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span className="font-medium">로그아웃</span>
+                    </button>
+                  </div>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="flex items-center justify-center space-x-2 bg-brand-accent text-white px-3 py-3 rounded-lg hover:bg-brand-accent700 transition-colors duration-200"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span className="font-medium">로그인</span>
+                  </Link>
+                )}
               </div>
             </div>
           </div>
