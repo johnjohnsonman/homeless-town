@@ -10,36 +10,212 @@ datasource db {
   url      = "file:./dev.db"
 }
 
+model Admin {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  name      String
+  email     String?  @unique
+  role      String   @default("admin")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastLogin DateTime?
+
+  @@index([username])
+  @@index([email])
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  email     String?  @unique
+  name      String
+  avatar    String?
+  bio       String?
+  location  String?
+  joinDate  DateTime @default(now())
+  lastSeen  DateTime @default(now())
+  isActive  Boolean  @default(true)
+  
+  // 통계
+  totalLikes    Int @default(0)
+  totalDislikes Int @default(0)
+  totalPosts    Int @default(0)
+  totalComments Int @default(0)
+  
+  // 관계
+  posts     Post[]
+  comments  Comment[]
+  likes     Like[]
+  dislikes  Dislike[]
+  bookmarks Bookmark[]
+  commentLikes    CommentLike[]
+  commentDislikes CommentDislike[]
+  
+  @@index([username])
+  @@index([email])
+}
+
 model Post {
-  id        String     @id @default(cuid())
-  title     String
-  slug      String     @unique
-  content   String
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  upvotes   Int        @default(0)
-  views     Int        @default(0)
-  adminPick Boolean    @default(false)
-  tags      PostTag[]
+  id          String     @id @default(cuid())
+  title       String
+  slug        String     @unique
+  content     String
+  author      String?
+  type        String     @default("post") // "post", "discussion", "housing"
+  marketTrend String?    // "up", "down", null
+  isHot       Boolean    @default(false)
+  isNew       Boolean    @default(true)
+  isPopular   Boolean    @default(false)
+  urgent      Boolean    @default(false)
+  verified    Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  upvotes     Int        @default(0)
+  downvotes   Int        @default(0)
+  views       Int        @default(0)
+  commentCount Int       @default(0)
+  adminPick   Boolean    @default(false)
+  
+  // 관계
+  tags        PostTag[]
+  comments    Comment[]
+  likes       Like[]
+  dislikes    Dislike[]
+  bookmarks   Bookmark[]
+  authorUser  User?      @relation(fields: [author], references: [id])
 
   @@index([createdAt])
   @@index([upvotes])
   @@index([adminPick])
+  @@index([type])
+  @@index([marketTrend])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  author    String
+  postId    String
+  parentId  String?  // 대댓글용
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // 통계
+  likes    Int @default(0)
+  dislikes Int @default(0)
+  
+  // 관계
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorUser User     @relation(fields: [author], references: [id])
+  parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReplies")
+  commentLikes    CommentLike[]
+  commentDislikes CommentDislike[]
+  
+  @@index([postId])
+  @@index([author])
+  @@index([createdAt])
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+  
+  // 관계
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, postId])
+  @@index([userId])
+  @@index([postId])
+}
+
+model Dislike {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+  
+  // 관계
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, postId])
+  @@index([userId])
+  @@index([postId])
+}
+
+model CommentLike {
+  id        String   @id @default(cuid())
+  userId    String
+  commentId String
+  createdAt DateTime @default(now())
+  
+  // 관계
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, commentId])
+  @@index([userId])
+  @@index([commentId])
+}
+
+model CommentDislike {
+  id        String   @id @default(cuid())
+  userId    String
+  commentId String
+  createdAt DateTime @default(now())
+  
+  // 관계
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, commentId])
+  @@index([userId])
+  @@index([commentId])
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+  
+  // 관계
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, postId])
+  @@index([userId])
+  @@index([postId])
 }
 
 model Tag {
-  id    String     @id @default(cuid())
-  name  String     @unique
-  slug  String     @unique
+  id        String   @id @default(cuid())
+  name      String   @unique
+  color     String?
+  createdAt DateTime @default(now())
+  
+  // 관계
   posts PostTag[]
+  
+  @@index([name])
 }
 
 model PostTag {
+  id     String @id @default(cuid())
   postId String
   tagId  String
-  post   Post @relation(fields: [postId], references: [id])
-  tag    Tag  @relation(fields: [tagId], references: [id])
-
-  @@id([postId, tagId])
-  @@index([tagId, postId])
+  
+  // 관계
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  @@unique([postId, tagId])
+  @@index([postId])
+  @@index([tagId])
 }

@@ -5,17 +5,29 @@
 @layer base {
   :root {
     --font-pretendard: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+    
+    /* Brand Colors */
+    --brand-bg: #F7F1E6;
+    --brand-surface: #FFFFFF;
+    --brand-card: #FBF7F0;
+    --brand-ink: #24324A;
+    --brand-muted: #5A6B80;
+    --brand-accent: #5E8A7E;
+    --brand-accent700: #4C786B;
+    --brand-gold: #CFAF6E;
+    --brand-border: #E7E1D6;
+    --brand-link: #2F4D78;
   }
   
   body {
     font-family: var(--font-pretendard);
     font-feature-settings: 'rlig' 1, 'calt' 1;
-    background-color: #F7F1E6;
-    color: #24324A;
+    background-color: var(--brand-bg);
+    color: var(--brand-ink);
   }
 
   a {
-    color: #2F4D78;
+    color: var(--brand-link);
   }
 
   a:hover {

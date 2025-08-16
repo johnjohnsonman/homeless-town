@@ -2,15 +2,17 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Eye, EyeOff, Lock, Mail } from 'lucide-react'
+import { Eye, EyeOff, Lock, User } from 'lucide-react'
+import { useAuth } from '../../contexts/AuthContext'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  const { login } = useAuth()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -18,28 +20,13 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password })
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        // 로그인 성공
-        if (data.user.role === 'admin') {
-          router.push('/admin')
-        } else {
-          router.push('/')
-        }
-      } else {
-        setError(data.error || '로그인에 실패했습니다.')
+      const success = await login(username, password)
+      if (success) {
+        // 로그인 성공 시 어드민 페이지로 이동
+        router.push('/admin')
       }
     } catch (error) {
-      setError('로그인 중 오류가 발생했습니다.')
+      setError(error instanceof Error ? error.message : '로그인에 실패했습니다.')
     } finally {
       setLoading(false)
     }
@@ -56,23 +43,30 @@ export default function LoginPage() {
             무주택촌 로그인
           </h2>
           <p className="mt-2 text-center text-sm text-blue-100">
-            계정에 로그인하여 서비스를 이용하세요
+            관리자 계정으로 로그인하여 서비스를 관리하세요
           </p>
         </div>
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+              {error}
+            </div>
+          )}
+
           <div className="rounded-md shadow-sm -space-y-px">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-gray-400" />
+                <User className="h-5 w-5 text-gray-400" />
               </div>
               <input
-                type="email"
+                type="text"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 className="appearance-none rounded-none relative block w-full px-3 py-3 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="이메일 주소"
+                placeholder="아이디"
+                disabled={loading}
               />
             </div>
             <div className="relative">
@@ -86,11 +80,13 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="appearance-none rounded-none relative block w-full px-3 py-3 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="비밀번호"
+                disabled={loading}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                disabled={loading}
               >
                 {showPassword ? (
                   <EyeOff className="h-5 w-5 text-gray-400" />
@@ -100,12 +96,6 @@ export default function LoginPage() {
               </button>
             </div>
           </div>
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
-              {error}
-            </div>
-          )}
 
           <div>
             <button
@@ -126,7 +116,7 @@ export default function LoginPage() {
 
           <div className="text-center">
             <p className="text-sm text-blue-100">
-              테스트 계정: admin@homeless-town.com / admin123
+              테스트 계정: <strong>admin</strong> / <strong>admin123</strong>
             </p>
           </div>
         </form>

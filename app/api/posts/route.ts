@@ -1,90 +1,108 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { z } from 'zod'
+import { NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
 
-const querySchema = z.object({
-  tag: z.string().optional(),
-  sort: z.enum(['recent', 'hot']).default('recent'),
-  page: z.coerce.number().min(1).default(1),
-  pageSize: z.coerce.number().min(1).max(100).default(20),
-})
+const prisma = new PrismaClient()
 
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
-    const { tag, sort, page, pageSize } = querySchema.parse({
-      tag: searchParams.get('tag'),
-      sort: searchParams.get('sort'),
-      page: searchParams.get('page'),
-      pageSize: searchParams.get('pageSize'),
-    })
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '20')
+    const tag = searchParams.get('tag')
+    const search = searchParams.get('search')
+    const sort = searchParams.get('sort') || 'latest'
 
-    const skip = (page - 1) * pageSize
+    // 페이지네이션 계산
+    const skip = (page - 1) * limit
 
-    // Build where clause
-    const where = tag && tag !== 'all' ? {
-      tags: {
+    // 필터 조건 구성
+    const where: any = {}
+    
+    if (tag) {
+      where.tags = {
         some: {
           tag: {
             slug: tag
           }
         }
       }
-    } : {}
+    }
 
-    // Build orderBy clause
-    const orderBy = sort === 'hot' 
-      ? [
-          { upvotes: 'desc' as const },
-          { createdAt: 'desc' as const }
-        ]
-      : { createdAt: 'desc' as const }
+    if (search) {
+      where.OR = [
+        { title: { contains: search } },
+        { content: { contains: search } }
+      ]
+    }
 
+    // 정렬 조건
+    let orderBy: any = {}
+    switch (sort) {
+      case 'popular':
+        orderBy = { upvotes: 'desc' }
+        break
+      case 'views':
+        orderBy = { views: 'desc' }
+        break
+      case 'latest':
+      default:
+        orderBy = { createdAt: 'desc' }
+        break
+    }
+
+    // 게시글 조회
     const [posts, total] = await Promise.all([
       prisma.post.findMany({
         where,
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          createdAt: true,
-          upvotes: true,
-          views: true,
-          adminPick: true,
+        include: {
           tags: {
-            select: {
-              tag: {
-                select: {
-                  name: true,
-                  slug: true,
-                }
-              }
+            include: {
+              tag: true
             }
           }
         },
         orderBy,
         skip,
-        take: pageSize + 1, // +1 to check if there's a next page
+        take: limit
       }),
       prisma.post.count({ where })
     ])
 
-    const hasNextPage = posts.length > pageSize
-    const items = posts.slice(0, pageSize)
-    const nextPageCursor = hasNextPage ? page + 1 : null
+    // 응답 데이터 구성
+    const formattedPosts = posts.map(post => ({
+      id: post.id,
+      title: post.title,
+      slug: post.slug,
+      content: post.content,
+      createdAt: post.createdAt,
+      updatedAt: post.updatedAt,
+      upvotes: post.upvotes,
+      views: post.views,
+      adminPick: post.adminPick,
+      tags: post.tags.map(pt => ({
+        id: pt.tag.id,
+        name: pt.tag.name,
+        slug: pt.tag.slug
+      }))
+    }))
 
     return NextResponse.json({
-      items,
-      nextPageCursor,
-      total,
-      currentPage: page,
-      totalPages: Math.ceil(total / pageSize),
+      posts: formattedPosts,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
     })
+
   } catch (error) {
-    console.error('Error fetching posts:', error)
+    console.error('Posts API error:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch posts' },
+      { error: '게시글 조회 중 오류가 발생했습니다.' },
       { status: 500 }
     )
+  } finally {
+    await prisma.$disconnect()
   }
 }

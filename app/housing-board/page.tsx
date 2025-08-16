@@ -1,342 +1,468 @@
 'use client'
 
 import { useState } from 'react'
-import Navigation from '@/components/Navigation'
-import { Plus, MapPin, DollarSign, Calendar, Users, Filter, Search, Heart } from 'lucide-react'
+import Link from 'next/link'
+import Navigation from '../../components/Navigation'
+import { Plus, Search, Filter, MapPin, Home, Users, Calendar, Clock, Star, MessageSquare, Eye } from 'lucide-react'
 
-export default function HousingBoard() {
-  const [showPostForm, setShowPostForm] = useState(false)
+export default function HousingBoardPage() {
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedFilter, setSelectedFilter] = useState('all')
+  const [selectedType, setSelectedType] = useState('all')
+  const [selectedLocation, setSelectedLocation] = useState('all')
+  const [currentPage, setCurrentPage] = useState(1)
+  const postsPerPage = 10
 
-  const housingRequests = [
+  // 샘플 데이터
+  const housingPosts = [
     {
       id: 1,
-      title: "반려동물 허용 정책이 있는 시내 근처 원룸 찾습니다",
-      poster: "사라 M.",
-      budget: "$1,200-1,500",
-      location: "시내 / 중앙가",
-      moveDate: "2024년 3월",
-      details: "세탁기가 있는 현대적인 원룸을 찾는 직장인입니다. 작은 강아지(11kg)가 있고 일주일에 2일 재택근무를 하므로 조용한 건물이 이상적입니다.",
-      preferences: ["반려동물 허용", "세탁기", "주차", "조용한 건물"],
-      posted: "2일 전",
-      responses: 3
+      title: "강남역 근처 원룸 구합니다",
+      content: "강남역 10분 거리에 위치한 원룸을 구하고 있습니다. 월세 80만원 이하, 보증금 500만원 이하로 구합니다.",
+      author: "구인자A",
+      authorRating: 4.8,
+      location: "강남구",
+      type: "원룸",
+      budget: "월 80만원",
+      deposit: "500만원",
+      size: "15평",
+      floor: "3층",
+      createdAt: "2024-01-15",
+      views: 156,
+      comments: 8,
+      urgent: true,
+      verified: true
     },
     {
       id: 2,
-      title: "좋은 학교가 있는 2룸이 필요한 3인 가족",
-      poster: "마이클 R.",
-      budget: "$1,800-2,200",
-      location: "교외 지역 선호",
-      moveDate: "2024년 6월",
-      details: "좋은 초등학교가 있는 가족 친화적인 동네를 찾고 있습니다. 2룸이 필요하며, 6살 아이를 위해 작은 마당이나 근처 공원이 있으면 좋겠습니다.",
-      preferences: ["좋은 학교", "가족 친화적 동네", "마당/공원 근처", "2룸 이상"],
-      posted: "1주일 전",
-      responses: 7
+      title: "홍대입구역 1인가구 월세",
+      content: "홍대입구역 근처 1인가구용 원룸을 구합니다. 깔끔하고 조용한 곳을 원합니다.",
+      author: "구인자B",
+      authorRating: 4.6,
+      location: "마포구",
+      type: "원룸",
+      budget: "월 60만원",
+      deposit: "300만원",
+      size: "12평",
+      floor: "2층",
+      createdAt: "2024-01-14",
+      views: 89,
+      comments: 5,
+      urgent: false,
+      verified: true
     },
     {
       id: 3,
-      title: "대학교 근처 저렴한 원룸/1룸을 찾는 학생",
-      poster: "엠마 L.",
-      budget: "$800-1,100",
-      location: "대학가",
-      moveDate: "2024년 8월",
-      details: "캠퍼스에서 도보/자전거 거리에 있는 저렴한 주거지를 찾는 대학원생입니다. 가구 있거나 없거나 상관없습니다. 원격 연구 작업을 위해 안정적인 인터넷이 필수입니다.",
-      preferences: ["캠퍼스 근처", "좋은 인터넷", "저렴함", "학생 친화적"],
-      posted: "3일 전",
-      responses: 5
+      title: "송파구 2룸 전세 구합니다",
+      content: "송파구 2룸 전세를 구합니다. 가족이 살 수 있는 넓은 공간을 원합니다.",
+      author: "구인자C",
+      authorRating: 4.9,
+      location: "송파구",
+      type: "투룸",
+      budget: "전세",
+      deposit: "1억원",
+      size: "25평",
+      floor: "5층",
+      createdAt: "2024-01-13",
+      views: 234,
+      comments: 12,
+      urgent: false,
+      verified: false
+    },
+    {
+      id: 4,
+      title: "분당구 신축 아파트 월세",
+      content: "분당구 신축 아파트 월세를 구합니다. 깨끗하고 현대적인 시설을 원합니다.",
+      author: "구인자D",
+      authorRating: 4.7,
+      location: "분당구",
+      type: "아파트",
+      budget: "월 120만원",
+      deposit: "800만원",
+      size: "30평",
+      floor: "15층",
+      createdAt: "2024-01-12",
+      views: 167,
+      comments: 9,
+      urgent: true,
+      verified: true
+    },
+    {
+      id: 5,
+      title: "잠실역 근처 오피스텔",
+      content: "잠실역 근처 오피스텔을 구합니다. 비즈니스용으로 사용할 예정입니다.",
+      author: "구인자E",
+      authorRating: 4.5,
+      location: "송파구",
+      type: "오피스텔",
+      budget: "월 150만원",
+      deposit: "1000만원",
+      size: "35평",
+      floor: "8층",
+      createdAt: "2024-01-11",
+      views: 98,
+      comments: 6,
+      urgent: false,
+      verified: false
+    },
+    {
+      id: 6,
+      title: "마포구 원룸 긴급 구합니다",
+      content: "마포구 원룸을 긴급하게 구합니다. 이번 주 내에 입주 가능한 곳을 원합니다.",
+      author: "구인자F",
+      authorRating: 4.3,
+      location: "마포구",
+      type: "원룸",
+      budget: "월 70만원",
+      deposit: "400만원",
+      size: "13평",
+      floor: "1층",
+      createdAt: "2024-01-10",
+      views: 312,
+      comments: 15,
+      urgent: true,
+      verified: true
+    },
+    {
+      id: 7,
+      title: "강북구 투룸 월세",
+      content: "강북구 투룸 월세를 구합니다. 2인 가구가 살 수 있는 공간을 원합니다.",
+      author: "구인자G",
+      authorRating: 4.8,
+      location: "강북구",
+      type: "투룸",
+      budget: "월 90만원",
+      deposit: "600만원",
+      size: "20평",
+      floor: "4층",
+      createdAt: "2024-01-09",
+      views: 145,
+      comments: 8,
+      urgent: false,
+      verified: true
+    },
+    {
+      id: 8,
+      title: "영등포구 원룸 구합니다",
+      content: "영등포구 원룸을 구합니다. 직장이 가까운 곳을 원합니다.",
+      author: "구인자H",
+      authorRating: 4.4,
+      location: "영등포구",
+      type: "원룸",
+      budget: "월 75만원",
+      deposit: "450만원",
+      size: "14평",
+      floor: "6층",
+      createdAt: "2024-01-08",
+      views: 78,
+      comments: 4,
+      urgent: false,
+      verified: false
+    },
+    {
+      id: 9,
+      title: "서초구 아파트 전세",
+      content: "서초구 아파트 전세를 구합니다. 좋은 학군을 원합니다.",
+      author: "구인자I",
+      authorRating: 4.9,
+      location: "서초구",
+      type: "아파트",
+      budget: "전세",
+      deposit: "1.2억원",
+      size: "28평",
+      floor: "12층",
+      createdAt: "2024-01-07",
+      views: 289,
+      comments: 18,
+      urgent: false,
+      verified: true
+    },
+    {
+      id: 10,
+      title: "노원구 원룸 긴급",
+      content: "노원구 원룸을 긴급하게 구합니다. 이번 달 내에 입주 가능한 곳을 원합니다.",
+      author: "구인자J",
+      authorRating: 4.2,
+      location: "노원구",
+      type: "원룸",
+      budget: "월 65만원",
+      deposit: "350만원",
+      size: "11평",
+      floor: "3층",
+      createdAt: "2024-01-06",
+      views: 201,
+      comments: 11,
+      urgent: true,
+      verified: false
     }
   ]
 
-  const filters = [
-    { value: 'all', label: '모든 요청' },
-    { value: 'studio', label: '원룸' },
-    { value: '1br', label: '1룸' },
-    { value: '2br', label: '2룸 이상' },
-    { value: 'budget', label: '저렴한 가격' },
-    { value: 'luxury', label: '고급' }
-  ]
+  const locations = ['전체', '강남구', '마포구', '송파구', '분당구', '강북구', '영등포구', '서초구', '노원구']
+  const types = ['전체', '원룸', '투룸', '아파트', '오피스텔']
+
+  // 필터링된 게시글
+  const filteredPosts = housingPosts.filter(post => {
+    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         post.content.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesType = selectedType === 'all' || post.type === selectedType
+    const matchesLocation = selectedLocation === 'all' || post.location === selectedLocation
+    
+    return matchesSearch && matchesType && matchesLocation
+  })
+
+  // 페이지네이션
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage)
+  const startIndex = (currentPage - 1) * postsPerPage
+  const endIndex = startIndex + postsPerPage
+  const currentPosts = filteredPosts.slice(startIndex, endIndex)
+
+  const getTimeAgo = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
+    
+    if (diffInHours < 1) return '방금 전'
+    if (diffInHours < 24) return `${diffInHours}시간 전`
+    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}일 전`
+    return date.toLocaleDateString()
+  }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-brand-bg">
       <Navigation />
       
       {/* Header */}
-      <section className="bg-gradient-to-br from-pastel-sage via-pastel-mint to-pastel-blue py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl font-display font-bold text-warm-900 mb-4">
-              주거 요청 게시판
-            </h1>
-            <p className="text-xl text-warm-700 leading-relaxed max-w-3xl mx-auto">
-              상세한 주거 요구사항을 게시하고 집주인과 중개업자가 연락할 수 있도록 하세요
-            </p>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button 
-              onClick={() => setShowPostForm(true)}
-              className="btn-primary flex items-center justify-center"
+      <div className="bg-brand-card border-b border-brand-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-brand-ink">주거 게시판</h1>
+              <p className="text-brand-muted mt-1">임차인들의 주거 요구사항을 확인하고 매칭해보세요</p>
+            </div>
+            <Link
+              href="/housing-board/new"
+              className="bg-brand-accent text-white px-6 py-3 rounded-xl hover:bg-brand-accent700 transition-colors font-semibold flex items-center space-x-2"
             >
-              <Plus className="w-5 h-5 mr-2" />
-              주거 요청 게시하기
-            </button>
-            <button className="btn-secondary">
-              내 요청 보기
-            </button>
+              <Plus className="w-5 h-5" />
+              <span>주거 요구사항 등록</span>
+            </Link>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Search and Filters */}
-      <section className="py-8 bg-white border-b border-warm-100">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row gap-4 items-center">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-warm-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="위치, 예산, 키워드로 검색..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="input-field pl-10"
-              />
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Filter className="w-5 h-5 text-warm-600" />
-              <select 
-                value={selectedFilter}
-                onChange={(e) => setSelectedFilter(e.target.value)}
-                className="input-field min-w-[160px]"
-              >
-                {filters.map(filter => (
-                  <option key={filter.value} value={filter.value}>
-                    {filter.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Housing Requests */}
-      <section className="py-12 bg-pastel-warm">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="space-y-6">
-            {housingRequests.map((request) => (
-              <div key={request.id} className="card hover:shadow-medium transition-all duration-200">
-                <div className="flex flex-col lg:flex-row lg:items-start gap-6">
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between mb-3">
-                      <h3 className="text-xl font-semibold text-warm-900 leading-tight">
-                        {request.title}
-                      </h3>
-                      <button className="text-warm-400 hover:text-warm-600 transition-colors">
-                        <Heart className="w-5 h-5" />
-                      </button>
-                    </div>
-                    
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-warm-600 mb-4">
-                      <span className="flex items-center">
-                        <Users className="w-4 h-4 mr-1" />
-                        {request.poster}
-                      </span>
-                      <span className="flex items-center">
-                        <Calendar className="w-4 h-4 mr-1" />
-                        {request.posted}
-                      </span>
-                      <span className="text-warm-500">
-                        집주인 응답 {request.responses}개
-                      </span>
-                    </div>
-                    
-                    <p className="text-warm-700 leading-relaxed mb-4">
-                      {request.details}
-                    </p>
-                    
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {request.preferences.map((pref, index) => (
-                        <span 
-                          key={index}
-                          className="px-3 py-1 bg-warm-100 text-warm-700 rounded-full text-sm"
-                        >
-                          {pref}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="lg:w-64 space-y-3">
-                    <div className="bg-pastel-cream rounded-xl p-4">
-                      <div className="flex items-center text-warm-700 mb-2">
-                        <DollarSign className="w-4 h-4 mr-2" />
-                        <span className="font-medium">예산</span>
-                      </div>
-                      <p className="font-semibold text-warm-900">{request.budget}/월</p>
-                    </div>
-                    
-                    <div className="bg-pastel-cream rounded-xl p-4">
-                      <div className="flex items-center text-warm-700 mb-2">
-                        <MapPin className="w-4 h-4 mr-2" />
-                        <span className="font-medium">위치</span>
-                      </div>
-                      <p className="font-semibold text-warm-900">{request.location}</p>
-                    </div>
-                    
-                    <div className="bg-pastel-cream rounded-xl p-4">
-                      <div className="flex items-center text-warm-700 mb-2">
-                        <Calendar className="w-4 h-4 mr-2" />
-                        <span className="font-medium">이사 날짜</span>
-                      </div>
-                      <p className="font-semibold text-warm-900">{request.moveDate}</p>
-                    </div>
-                    
-                    <button className="w-full btn-primary">
-                      임차인에게 연락하기
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="text-center mt-12">
-            <button className="btn-secondary">
-              더 많은 요청 보기
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Post Form Modal */}
-      {showPostForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-warm-100">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-display font-bold text-warm-900">
-                  주거 요청 게시하기
-                </h2>
-                <button 
-                  onClick={() => setShowPostForm(false)}
-                  className="text-warm-400 hover:text-warm-600 transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-            
-            <form className="p-6 space-y-6">
-              <div>
-                <label className="block font-medium text-warm-900 mb-2">
-                  요청 제목 *
-                </label>
-                <input
-                  type="text"
-                  placeholder="찾고 있는 것에 대한 간단한 설명"
-                  className="input-field"
-                />
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-medium text-warm-900 mb-2">
-                    예산 범위 *
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="예: $1,200-1,500"
-                    className="input-field"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block font-medium text-warm-900 mb-2">
-                    희망 이사 날짜 *
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="예: 2024년 3월"
-                    className="input-field"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label className="block font-medium text-warm-900 mb-2">
-                  선호 지역 *
-                </label>
-                <input
-                  type="text"
-                  placeholder="동네, 구역, 또는 일반적인 지역"
-                  className="input-field"
-                />
-              </div>
-              
-              <div>
-                <label className="block font-medium text-warm-900 mb-2">
-                  상세 요구사항 *
-                </label>
-                <textarea
-                  rows={4}
-                  placeholder="이상적인 집, 생활 방식 요구사항, 직장 상황, 가족 규모 등을 설명하세요."
-                  className="input-field resize-none"
-                />
-              </div>
-              
-              <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                <button type="submit" className="btn-primary flex-1">
-                  요청 게시하기
-                </button>
-                <button 
-                  type="button"
-                  onClick={() => setShowPostForm(false)}
-                  className="btn-secondary flex-1"
-                >
-                  취소
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* How It Works */}
-      <section className="py-20 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-display font-bold text-warm-900 mb-12">
-            주거 게시판이 작동하는 방법
-          </h2>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col lg:flex-row gap-6">
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-              <div className="w-16 h-16 bg-gradient-to-r from-warm-400 to-warm-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-white">1</span>
+          {/* Left Sidebar - Filters */}
+          <div className="lg:w-64 space-y-6">
+            {/* Search */}
+            <div className="bg-brand-card rounded-2xl shadow-soft border border-brand-border p-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-brand-muted" />
+                <input
+                  type="text"
+                  placeholder="주거 공간 검색..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-brand-border rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-transparent text-sm"
+                />
               </div>
-              <h3 className="text-xl font-semibold text-warm-900 mb-2">요구사항 게시하기</h3>
-              <p className="text-warm-600">이상적인 집, 예산, 일정에 대한 상세한 정보를 공유하세요</p>
             </div>
-            
-            <div>
-              <div className="w-16 h-16 bg-gradient-to-r from-warm-400 to-warm-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-white">2</span>
+
+            {/* Type Filter */}
+            <div className="bg-brand-card rounded-2xl shadow-soft border border-brand-border p-4">
+              <h3 className="font-semibold text-brand-ink mb-3">주거 유형</h3>
+              <div className="space-y-2">
+                {[
+                  { value: 'all', label: '전체' },
+                  { value: '원룸', label: '원룸' },
+                  { value: '투룸', label: '투룸' },
+                  { value: '아파트', label: '아파트' },
+                  { value: '오피스텔', label: '오피스텔' }
+                ].map((option) => (
+                  <label key={option.value} className="flex items-center">
+                    <input
+                      type="radio"
+                      name="type"
+                      value={option.value}
+                      checked={selectedType === option.value}
+                      onChange={(e) => setSelectedType(e.target.value)}
+                      className="mr-2 text-brand-accent"
+                    />
+                    <span className="text-sm text-brand-ink">{option.label}</span>
+                  </label>
+                ))}
               </div>
-              <h3 className="text-xl font-semibold text-warm-900 mb-2">집주인이 연락하기</h3>
-              <p className="text-warm-600">부동산 소유자와 중개업자가 일치하는 옵션으로 직접 연락합니다</p>
             </div>
-            
-            <div>
-              <div className="w-16 h-16 bg-gradient-to-r from-warm-400 to-warm-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-white">3</span>
+
+            {/* Location Filter */}
+            <div className="bg-brand-card rounded-2xl shadow-soft border border-brand-border p-4">
+              <h3 className="font-semibold text-brand-ink mb-3">지역</h3>
+              <div className="space-y-2">
+                {[
+                  { value: 'all', label: '전체' },
+                  { value: '강남구', label: '강남구' },
+                  { value: '마포구', label: '마포구' },
+                  { value: '송파구', label: '송파구' },
+                  { value: '분당구', label: '분당구' },
+                  { value: '강북구', label: '강북구' },
+                  { value: '영등포구', label: '영등포구' },
+                  { value: '서초구', label: '서초구' },
+                  { value: '노원구', label: '노원구' }
+                ].map((option) => (
+                  <label key={option.value} className="flex items-center">
+                    <input
+                      type="radio"
+                      name="location"
+                      value={option.value}
+                      checked={selectedLocation === option.value}
+                      onChange={(e) => setSelectedLocation(e.target.value)}
+                      className="mr-2 text-brand-accent"
+                    />
+                    <span className="text-sm text-brand-ink">{option.label}</span>
+                  </label>
+                ))}
               </div>
-              <h3 className="text-xl font-semibold text-warm-900 mb-2">집 찾기</h3>
-              <p className="text-warm-600">옵션을 검토하고, 시찰을 예약하고, 완벽한 임대주택을 선택하세요</p>
+            </div>
+          </div>
+
+          {/* Main Content */}
+          <div className="flex-1">
+            {/* Posts Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {currentPosts.map((post) => (
+                <div key={post.id} className="bg-brand-card rounded-2xl shadow-soft border border-brand-border overflow-hidden hover:shadow-medium transition-all duration-200">
+                  {/* Header */}
+                  <div className="p-6 pb-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-brand-ink line-clamp-2 mb-2">
+                          <Link href={`/housing-board/${post.id}`} className="hover:text-brand-accent transition-colors">
+                            {post.title}
+                          </Link>
+                        </h3>
+                        
+                        <p className="text-sm text-brand-muted line-clamp-3 mb-3">
+                          {post.content}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Badges */}
+                    <div className="flex items-center space-x-2 mb-4">
+                      {post.urgent && (
+                        <span className="px-2 py-1 bg-brand-accent text-white text-xs rounded-full font-medium">긴급</span>
+                      )}
+                      {post.verified && (
+                        <span className="px-2 py-1 bg-brand-gold text-white text-xs rounded-full font-medium">인증</span>
+                      )}
+                      <span className="px-2 py-1 bg-brand-accent/10 text-brand-accent text-xs rounded-full font-medium border border-brand-accent/20">
+                        {post.type}
+                      </span>
+                    </div>
+
+                    {/* Details */}
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="text-brand-muted">예산</span>
+                        <span className="font-medium text-brand-ink">{post.budget}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-brand-muted">보증금</span>
+                        <span className="font-medium text-brand-ink">{post.deposit}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-brand-muted">면적</span>
+                        <span className="font-medium text-brand-ink">{post.size}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="px-6 py-4 bg-brand-surface border-t border-brand-border">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-8 h-8 bg-brand-accent/10 rounded-full flex items-center justify-center">
+                          <Users className="w-4 h-4 text-brand-accent" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-brand-ink">{post.author}</p>
+                          <div className="flex items-center space-x-1">
+                            <Star className="w-3 h-3 text-brand-gold fill-current" />
+                            <span className="text-xs text-brand-muted">{post.authorRating}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-brand-ink">{post.location}</p>
+                        <p className="text-xs text-brand-muted">{post.floor}층</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-sm text-brand-muted">
+                      <div className="flex items-center space-x-4">
+                        <span className="flex items-center">
+                          <Eye className="w-4 h-4 mr-1" />
+                          {post.views}
+                        </span>
+                        <span className="flex items-center">
+                          <MessageSquare className="w-4 h-4 mr-1" />
+                          {post.comments}
+                        </span>
+                      </div>
+                      <span className="text-xs">{getTimeAgo(post.createdAt)}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-8 flex justify-center">
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-2 text-sm font-medium text-brand-muted bg-brand-surface border border-brand-border rounded-lg hover:bg-brand-accent hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    이전
+                  </button>
+                  
+                  {Array.from({ length: totalPages }, (_, i) => {
+                    const pageNum = i + 1
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                          currentPage === pageNum
+                            ? 'bg-brand-accent text-white'
+                            : 'text-brand-muted bg-brand-surface border border-brand-border hover:bg-brand-accent hover:text-white'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    )
+                  })}
+                  
+                  <button
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-2 text-sm font-medium text-brand-muted bg-brand-surface border border-brand-border rounded-lg hover:bg-brand-accent hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    다음
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Page Info */}
+            <div className="mt-4 text-center text-sm text-brand-muted">
+              총 {filteredPosts.length}개의 주거 요구사항 중 {startIndex + 1}-{Math.min(endIndex, filteredPosts.length)}번째를 보고 있습니다
             </div>
           </div>
         </div>
-      </section>
+      </div>
     </div>
   )
 }

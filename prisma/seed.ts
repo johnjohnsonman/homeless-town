@@ -1,118 +1,331 @@
 import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
-const tags = [
-  { name: '주거', slug: 'housing' },
-  { name: '계약', slug: 'contract' },
-  { name: '법률', slug: 'legal' },
-  { name: '금융', slug: 'finance' },
-  { name: '이사', slug: 'moving' },
-  { name: '인테리어', slug: 'interior' },
-  { name: '동네정보', slug: 'neighborhood' },
-  { name: '공동체', slug: 'community' },
-  { name: '정책', slug: 'policy' },
-  { name: '뉴스', slug: 'news' },
-  { name: '일상', slug: 'daily' },
-  { name: '질문', slug: 'question' },
-  { name: '팁', slug: 'tip' },
-  { name: '후기', slug: 'review' },
-  { name: '잡담', slug: 'chat' },
-]
-
-const sampleTitles = [
-  '월세 계약서 작성할 때 주의사항',
-  '전입신고 절차와 필요한 서류',
-  '보증금 반환 거부 당했을 때 대처법',
-  '월세 인상에 대한 법적 대응',
-  '집주인과의 분쟁 해결 방법',
-  '전세 전환 시 고려사항',
-  '부동산 중개수수료 절약 팁',
-  '집 구할 때 체크해야 할 체크리스트',
-  '월세 납부일 연체 시 벌칙',
-  '임대차 계약 갱신 요청 방법',
-  '집 수리 시 집주인 책임 범위',
-  '월세 계약 해지 시 주의사항',
-  '전입신고 미신고 시 벌칙',
-  '보증금 반환 청구 소송',
-  '집주인과의 소통 방법',
-  '월세 인상 제한 규정',
-  '전세 전환 시 중개수수료',
-  '부동산 계약서 검토 포인트',
-  '집 구할 때 사기 피해 예방법',
-  '월세 납부 증빙 자료 관리',
-]
-
 async function main() {
-  console.log('🌱 Starting database seed...')
+  console.log('🌱 데이터베이스 시드 시작...')
 
-  // Create tags
-  console.log('Creating tags...')
-  for (const tag of tags) {
-    await prisma.tag.upsert({
-      where: { slug: tag.slug },
+  // 기존 데이터 삭제
+  await prisma.postTag.deleteMany()
+  await prisma.post.deleteMany()
+  await prisma.tag.deleteMany()
+  await prisma.admin.deleteMany()
+  await prisma.user.deleteMany()
+  await prisma.comment.deleteMany()
+  await prisma.like.deleteMany()
+  await prisma.dislike.deleteMany()
+  await prisma.commentLike.deleteMany()
+  await prisma.commentDislike.deleteMany()
+  await prisma.bookmark.deleteMany()
+
+  // 태그 생성
+  const tags = await Promise.all([
+    prisma.tag.upsert({
+      where: { name: '주거' },
       update: {},
-      create: tag,
+      create: { name: '주거', color: '#3B82F6' }
+    }),
+    prisma.tag.upsert({
+      where: { name: '계약' },
+      update: {},
+      create: { name: '계약', color: '#10B981' }
+    }),
+    prisma.tag.upsert({
+      where: { name: '법률' },
+      update: {},
+      create: { name: '법률', color: '#F59E0B' }
+    }),
+    prisma.tag.upsert({
+      where: { name: '시황' },
+      update: {},
+      create: { name: '시황', color: '#EF4444' }
+    }),
+    prisma.tag.upsert({
+      where: { name: '부동산' },
+      update: {},
+      create: { name: '부동산', color: '#8B5CF6' }
+    }),
+    prisma.tag.upsert({
+      where: { name: '투자' },
+      update: {},
+      create: { name: '투자', color: '#06B6D4' }
+    }),
+    prisma.tag.upsert({
+      where: { name: '정책' },
+      update: {},
+      create: { name: '정책', color: '#84CC16' }
+    }),
+    prisma.tag.upsert({
+      where: { name: '분쟁사례' },
+      update: {},
+      create: { name: '분쟁사례', color: '#F97316' }
+    }),
+    prisma.tag.upsert({
+      where: { name: '보증금' },
+      update: {},
+      create: { name: '보증금', color: '#EC4899' }
+    }),
+    prisma.tag.upsert({
+      where: { name: '월세인상' },
+      update: {},
+      create: { name: '월세인상', color: '#14B8A6' }
+    }),
+    prisma.tag.upsert({
+      where: { name: '계약해지' },
+      update: {},
+      create: { name: '계약해지', color: '#6366F1' }
+    }),
+    prisma.tag.upsert({
+      where: { name: '입주체크' },
+      update: {},
+      create: { name: '입주체크', color: '#22C55E' }
+    }),
+    prisma.tag.upsert({
+      where: { name: '집주인소통' },
+      update: {},
+      create: { name: '집주인소통', color: '#EAB308' }
+    }),
+    prisma.tag.upsert({
+      where: { name: '법적권리' },
+      update: {},
+      create: { name: '법적권리', color: '#F43F5E' }
+    }),
+    prisma.tag.upsert({
+      where: { name: '안전수칙' },
+      update: {},
+      create: { name: '안전수칙', color: '#0EA5E9' }
     })
-  }
+  ])
 
-  // Get all tags for reference
-  const createdTags = await prisma.tag.findMany()
-
-  // Create posts
-  console.log('Creating posts...')
-  for (let i = 0; i < 80; i++) {
-    const title = sampleTitles[i % sampleTitles.length]
-    const slug = `${title.replace(/[^a-zA-Z0-9가-힣]/g, '-').toLowerCase()}-${i + 1}`
-    
-    // Random date within last 30 days
-    const createdAt = new Date()
-    createdAt.setDate(createdAt.getDate() - Math.floor(Math.random() * 30))
-    
-    // Random upvotes (0-50)
-    const upvotes = Math.floor(Math.random() * 51)
-    
-    // Random views (0-200)
-    const views = Math.floor(Math.random() * 201)
-    
-    // 10% chance of being admin pick
-    const adminPick = Math.random() < 0.1
-    
-    // Random tags (1-3 tags)
-    const postTags = []
-    const numTags = Math.floor(Math.random() * 3) + 1
-    const shuffledTags = [...createdTags].sort(() => 0.5 - Math.random())
-    
-    for (let j = 0; j < numTags; j++) {
-      if (shuffledTags[j]) {
-        postTags.push({
-          tagId: shuffledTags[j].id,
-        })
-      }
-    }
-
-    await prisma.post.create({
+  // 샘플 사용자 생성
+  const users = await Promise.all([
+    prisma.user.create({
       data: {
-        title: `${title} ${i + 1}`,
-        slug,
-        content: `이것은 ${title}에 대한 샘플 내용입니다. 실제 사용 시에는 더 자세하고 유용한 정보를 포함해야 합니다.`,
-        createdAt,
-        upvotes,
-        views,
-        adminPick,
-        tags: {
-          create: postTags,
-        },
-      },
+        username: 'user1',
+        email: 'user1@example.com',
+        name: '김철수',
+        bio: '부동산에 관심이 많은 임차인입니다.',
+        location: '서울시 강남구',
+        totalLikes: 15,
+        totalDislikes: 2,
+        totalPosts: 3,
+        totalComments: 8
+      }
+    }),
+    prisma.user.create({
+      data: {
+        username: 'user2',
+        email: 'user2@example.com',
+        name: '이영희',
+        bio: '법률 상담을 도와드립니다.',
+        location: '서울시 마포구',
+        totalLikes: 28,
+        totalDislikes: 1,
+        totalPosts: 5,
+        totalComments: 12
+      }
+    }),
+    prisma.user.create({
+      data: {
+        username: 'user3',
+        email: 'user3@example.com',
+        name: '박민수',
+        bio: '부동산 투자에 대한 정보를 공유합니다.',
+        location: '서울시 송파구',
+        totalLikes: 42,
+        totalDislikes: 5,
+        totalPosts: 7,
+        totalComments: 18
+      }
     })
-  }
+  ])
 
-  console.log('✅ Database seeded successfully!')
+  // 어드민 계정 생성
+  const hashedPassword = await bcrypt.hash('admin123', 10)
+  const admin = await prisma.admin.upsert({
+    where: { username: 'admin' },
+    update: {},
+    create: {
+      username: 'admin',
+      password: hashedPassword,
+      name: '관리자',
+      email: 'admin@homeless-town.com',
+      role: 'admin'
+    }
+  })
+
+  console.log('✅ 어드민 계정 생성 완료:', admin.username)
+
+  // 샘플 게시글 생성
+  const posts = await Promise.all([
+    prisma.post.create({
+      data: {
+        title: '강남역 근처 원룸 구합니다',
+        slug: 'gangnam-room-wanted-1',
+        content: '강남역 10분 거리에 위치한 원룸을 구하고 있습니다. 월세 80만원 이하, 보증금 500만원 이하로 구합니다.',
+        author: users[0].id,
+        type: 'housing',
+        marketTrend: 'up',
+        isHot: true,
+        isNew: true,
+        isPopular: false,
+        urgent: true,
+        verified: true,
+        upvotes: 12,
+        downvotes: 1,
+        views: 156,
+        commentCount: 3,
+        adminPick: false,
+        tags: {
+          create: [
+            { tagId: tags[0].id }, // 주거
+            { tagId: tags[3].id }  // 시황
+          ]
+        }
+      }
+    }),
+    prisma.post.create({
+      data: {
+        title: '보증금 반환 문제 해결 경험 공유',
+        slug: 'deposit-return-experience-2',
+        content: '집주인과의 보증금 반환 문제를 해결한 경험을 공유합니다. 법적 절차와 주의사항에 대해 설명드립니다.',
+        author: users[1].id,
+        type: 'discussion',
+        marketTrend: null,
+        isHot: false,
+        isNew: false,
+        isPopular: true,
+        urgent: false,
+        verified: true,
+        upvotes: 25,
+        downvotes: 2,
+        views: 234,
+        commentCount: 8,
+        adminPick: true,
+        tags: {
+          create: [
+            { tagId: tags[1].id }, // 계약
+            { tagId: tags[2].id }, // 법률
+            { tagId: tags[8].id }  // 보증금
+          ]
+        }
+      }
+    }),
+    prisma.post.create({
+      data: {
+        title: '월세 vs 전세 비교 분석',
+        slug: 'monthly-vs-jeonse-comparison-3',
+        content: '현재 부동산 시장 상황에서 월세와 전세 중 어떤 선택이 더 유리한지 분석해보았습니다.',
+        author: users[2].id,
+        type: 'discussion',
+        marketTrend: 'down',
+        isHot: true,
+        isNew: false,
+        isPopular: true,
+        urgent: false,
+        verified: false,
+        upvotes: 38,
+        downvotes: 4,
+        views: 456,
+        commentCount: 15,
+        adminPick: false,
+        tags: {
+          create: [
+            { tagId: tags[3].id }, // 시황
+            { tagId: tags[4].id }, // 부동산
+            { tagId: tags[5].id }  // 투자
+          ]
+        }
+      }
+    })
+  ])
+
+  // 샘플 댓글 생성
+  const comments = await Promise.all([
+    prisma.comment.create({
+      data: {
+        content: '정말 유용한 정보네요! 저도 비슷한 경험이 있어서 도움이 많이 됐습니다.',
+        author: users[1].id,
+        postId: posts[0].id,
+        likes: 5,
+        dislikes: 0
+      }
+    }),
+    prisma.comment.create({
+      data: {
+        content: '강남역 근처는 정말 비싸죠. 예산을 조금 더 늘려보시는 건 어떨까요?',
+        author: users[2].id,
+        postId: posts[0].id,
+        likes: 3,
+        dislikes: 1
+      }
+    }),
+    prisma.comment.create({
+      data: {
+        content: '보증금 반환 문제는 정말 까다롭죠. 법적 절차를 잘 따라야 합니다.',
+        author: users[0].id,
+        postId: posts[1].id,
+        likes: 8,
+        dislikes: 0
+      }
+    })
+  ])
+
+  // 샘플 좋아요/싫어요 생성
+  await Promise.all([
+    prisma.like.create({
+      data: {
+        userId: users[0].id,
+        postId: posts[1].id
+      }
+    }),
+    prisma.like.create({
+      data: {
+        userId: users[1].id,
+        postId: posts[2].id
+      }
+    }),
+    prisma.like.create({
+      data: {
+        userId: users[2].id,
+        postId: posts[0].id
+      }
+    }),
+    prisma.dislike.create({
+      data: {
+        userId: users[0].id,
+        postId: posts[2].id
+      }
+    })
+  ])
+
+  // 샘플 북마크 생성
+  await Promise.all([
+    prisma.bookmark.create({
+      data: {
+        userId: users[0].id,
+        postId: posts[1].id
+      }
+    }),
+    prisma.bookmark.create({
+      data: {
+        userId: users[1].id,
+        postId: posts[2].id
+      }
+    })
+  ])
+
+  console.log('✅ 시드 데이터 생성 완료')
+  console.log(`- 태그: ${tags.length}개`)
+  console.log(`- 사용자: ${users.length}명`)
+  console.log(`- 게시글: ${posts.length}개`)
+  console.log(`- 댓글: ${comments.length}개`)
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Error seeding database:', e)
+    console.error('❌ 시드 데이터 생성 실패:', e)
     process.exit(1)
   })
   .finally(async () => {

@@ -1,234 +1,402 @@
-import Navigation from '@/components/Navigation'
-import { AlertCircle, CheckCircle, Book, Users, Clock, DollarSign } from 'lucide-react'
+'use client'
 
-export default function ContractGuide() {
-  const essentialPoints = [
+import { useState } from 'react'
+import Navigation from '../../components/Navigation'
+import { FileText, AlertTriangle, CheckCircle, Info, Download, ExternalLink, BookOpen, Scale, Shield, Clock, Users, Home, DollarSign } from 'lucide-react'
+
+export default function ContractGuidePage() {
+  const [selectedCategory, setSelectedCategory] = useState('all')
+
+  const categories = [
+    { id: 'all', name: '전체', icon: BookOpen },
+    { id: 'basics', name: '기본 지식', icon: Info },
+    { id: 'documents', name: '계약서', icon: FileText },
+    { id: 'deposit', name: '보증금', icon: DollarSign },
+    { id: 'rights', name: '권리 보호', icon: Shield },
+    { id: 'disputes', name: '분쟁 해결', icon: Scale }
+  ]
+
+  const guides = [
     {
-      title: "보증금",
-      description: "보증금 금액, 보관 절차, 반환 조건에 대한 권리를 알아보세요.",
-      icon: DollarSign,
-      tips: [
-        "대부분 지역에서 보증금은 2-3개월 월세를 초과할 수 없음",
-        "별도 계좌에 보관되어야 함",
-        "서면 영수증을 받으세요",
-        "입주 시 부동산 상태를 문서화하세요"
-      ]
+      id: 1,
+      title: "표준 임대차 계약서 작성법",
+      category: "documents",
+      difficulty: "초급",
+      readTime: "5분",
+      summary: "임대차 계약서의 필수 항목과 작성 방법을 단계별로 설명합니다.",
+      content: `
+        임대차 계약서는 임차인과 집주인의 권리와 의무를 명확히 하는 중요한 문서입니다.
+        
+        **필수 항목:**
+        - 임대인과 임차인의 성명 및 주소
+        - 임대물의 표시 (주소, 면적, 용도)
+        - 임대차의 목적
+        - 임대차 기간
+        - 보증금 및 월세
+        - 계약 해지 조건
+        - 기타 특약사항
+        
+        **작성 시 주의사항:**
+        1. 모든 항목을 명확하게 작성
+        2. 구두 약속은 문서에 반드시 포함
+        3. 법적 효력이 있는 용어 사용
+        4. 계약서 사본 보관
+      `,
+      tags: ['계약서', '작성법', '필수항목'],
+      downloads: 1247,
+      rating: 4.8,
+      isNew: true
     },
     {
-      title: "임대 조건",
-      description: "기간, 갱신 옵션, 해지 조항을 이해하세요.",
-      icon: Clock,
-      tips: [
-        "정기 계약 vs 월세 계약",
-        "해지 통지 기간",
-        "자동 갱신 조항",
-        "계약 해지 위약금"
-      ]
+      id: 2,
+      title: "보증금 반환 조건과 절차",
+      category: "deposit",
+      difficulty: "중급",
+      readTime: "8분",
+      summary: "보증금 반환을 위한 법적 조건과 절차를 상세히 설명합니다.",
+      content: `
+        보증금은 임차인이 계약을 이행한 후 반환받을 수 있는 권리가 있습니다.
+        
+        **반환 조건:**
+        - 계약 기간 만료
+        - 계약 해지 시 적절한 사전 통지
+        - 임대물의 원상 복구
+        - 미납 임대료 정산
+        
+        **반환 절차:**
+        1. 입주 시 사진 촬영 및 체크리스트 작성
+        2. 계약 만료 1개월 전 통지
+        3. 임대물 점검 및 정리
+        4. 보증금 반환 요청서 작성
+        5. 법적 절차 (필요시)
+        
+        **주의사항:**
+        - 입주 시 사진 촬영은 필수
+        - 계약서에 명시되지 않은 구두 약속은 믿지 말 것
+        - 보증금은 별도 계좌에 보관되어야 함
+      `,
+      tags: ['보증금', '반환', '절차'],
+      downloads: 892,
+      rating: 4.7,
+      isNew: false
     },
     {
-      title: "유지보수 책임",
-      description: "수리 및 유지보수를 누가 담당하는지 명확히 구분하세요.",
-      icon: CheckCircle,
-      tips: [
-        "집주인: 구조, 난방, 배관",
-        "임차인: 소규모 수리, 청소",
-        "긴급 연락 절차",
-        "응답 시간"
-      ]
+      id: 3,
+      title: "월세 인상 제한 규정",
+      category: "rights",
+      difficulty: "중급",
+      readTime: "6분",
+      summary: "월세 인상에 대한 법적 제한사항과 임차인의 권리를 설명합니다.",
+      content: `
+        월세 인상은 법적으로 제한되어 있으며, 임차인은 이를 거부할 권리가 있습니다.
+        
+        **법적 제한:**
+        - 계약 기간 중 월세 인상 금지
+        - 계약 갱신 시 최대 인상률 제한
+        - 부당한 인상 요구 거부 권리
+        
+        **최대 인상률:**
+        - 일반적으로 연 5% 이내
+        - 물가 상승률 고려
+        - 시장 상황 반영
+        
+        **대응 방법:**
+        1. 법적 근거 확인
+        2. 내용증명 발송
+        3. 소액사건심판원 신청
+        4. 법무법인 상담
+        
+        **주의사항:**
+        - 계약서에 명시되지 않은 인상 요구 거부
+        - 법적 절차는 생각보다 간단
+        - 전문가 상담 권장
+      `,
+      tags: ['월세', '인상', '제한'],
+      downloads: 1567,
+      rating: 4.9,
+      isNew: false
     },
     {
-      title: "임대료 및 수수료",
-      description: "모든 비용, 결제 방법, 연체료 정책.",
-      icon: AlertCircle,
-      tips: [
-        "월세 금액 및 납부일",
-        "허용되는 결제 방법",
-        "연체료 금액 및 유예 기간",
-        "공과금 책임"
-      ]
+      id: 4,
+      title: "계약 해지 시 주의사항",
+      category: "basics",
+      difficulty: "초급",
+      readTime: "4분",
+      summary: "계약을 중간에 해지할 때 주의해야 할 사항들을 정리했습니다.",
+      content: `
+        계약 해지는 신중하게 결정해야 하며, 법적 절차를 따라야 합니다.
+        
+        **해지 사유:**
+        - 상호 합의
+        - 계약 위반
+        - 부득이한 사정
+        
+        **해지 절차:**
+        1. 상대방에게 해지 의사 통지
+        2. 해지 사유 명시
+        3. 정리 기간 설정
+        4. 임대물 점검 및 정리
+        5. 보증금 정산
+        
+        **주의사항:**
+        - 갑작스러운 해지 금지
+        - 적절한 사전 통지
+        - 원상 복구 의무
+        - 손해배상 가능성
+        
+        **권장사항:**
+        - 전문가 상담
+        - 서면 통지
+        - 증거 자료 보관
+      `,
+      tags: ['계약해지', '절차', '주의사항'],
+      downloads: 734,
+      rating: 4.6,
+      isNew: false
+    },
+    {
+      id: 5,
+      title: "집주인과의 갈등 해결 방법",
+      category: "disputes",
+      difficulty: "고급",
+      readTime: "10분",
+      summary: "집주인과의 갈등을 효과적으로 해결하는 방법과 전략을 제시합니다.",
+      content: `
+        갈등은 소통과 법적 지식을 바탕으로 해결할 수 있습니다.
+        
+        **갈등 유형:**
+        - 보증금 반환 거부
+        - 월세 인상 요구
+        - 시설 수리 거부
+        - 계약 위반
+        
+        **해결 방법:**
+        1. 상호 소통 시도
+        2. 중재자 개입
+        3. 법적 절차
+        4. 전문가 상담
+        
+        **소통 전략:**
+        - 감정적 대응 금지
+        - 객관적 사실 제시
+        - 서면 소통
+        - 증거 자료 준비
+        
+        **법적 대응:**
+        - 소액사건심판원
+        - 법무법인 상담
+        - 소송 (최후 수단)
+        
+        **예방 방법:**
+        - 명확한 계약서 작성
+        - 정기적인 소통
+        - 문제 조기 발견
+      `,
+      tags: ['갈등해결', '소통', '법적대응'],
+      downloads: 1123,
+      rating: 4.8,
+      isNew: false
+    },
+    {
+      id: 6,
+      title: "전입신고 절차와 필요한 서류",
+      category: "basics",
+      difficulty: "초급",
+      readTime: "3분",
+      summary: "전입신고를 위한 상세한 절차와 필요한 서류들을 정리했습니다.",
+      content: `
+        전입신고는 새로운 주소지로 이사할 때 반드시 해야 하는 행정 절차입니다.
+        
+        **전입신고 기간:**
+        - 이사한 날로부터 14일 이내
+        
+        **필요한 서류:**
+        1. 신분증 (주민등록증, 운전면허증 등)
+        2. 임대차 계약서
+        3. 전입신고서
+        
+        **신고 방법:**
+        1. 온라인 신고 (정부24)
+        2. 동사무소 방문
+        3. 우편 신고
+        
+        **주의사항:**
+        - 기한 내 신고 필수
+        - 정확한 주소 입력
+        - 계약서 보관
+        
+        **혜택:**
+        - 주민센터 서비스 이용
+        - 투표권 행사
+        - 각종 혜택 신청
+      `,
+      tags: ['전입신고', '절차', '서류'],
+      downloads: 567,
+      rating: 4.5,
+      isNew: false
     }
   ]
 
-  const caseStudies = [
-    {
-      title: "숨겨진 수수료의 놀라움",
-      author: "마리아, 26세",
-      category: "수수료 및 비용",
-      story: "임대료가 좋은 거래라고 생각했지만, 계약서에 묻혀있는 필수 주차비, 반려동물 수수료, '편의시설 수수료'를 놓쳤습니다. 서명하기 전에 항상 모든 월간 비용의 완전한 내역을 요청하세요.",
-      lesson: "서명하기 전에 모든 수수료의 상세한 내역을 요청하세요. 주차, 반려동물, 편의시설 및 기타 잠재적 비용에 대해 구체적으로 문의하세요.",
-      bgColor: "bg-pastel-pink"
-    },
-    {
-      title: "보증금 회수 승리",
-      author: "제임스, 32세", 
-      category: "보증금",
-      story: "입주할 때 모든 방의 사진과 비디오를 찍고 기존 손상을 기록했습니다. 이사할 때 집주인이 '기존' 문제에 대해 비용을 청구하려 했습니다. 제 문서화 덕분에 2,400달러 보증금을 전액 돌려받았습니다.",
-      lesson: "입주 시와 이사 시 모든 것을 사진/비디오로 문서화하세요. 입주 후 즉시 집주인에게 사본을 보내세요.",
-      bgColor: "bg-pastel-sage"
-    },
-    {
-      title: "전세 대출의 악몽",
-      author: "애슐리, 24세",
-      category: "계약 위반", 
-      story: "직장 때문에 이사해야 했고 임대권을 인수할 사람을 찾았습니다. 제 계약서에는 서면 허가 없이 전세 대출을 금지하는 조항이 있었습니다. 결국 3개월 동안 이중 임대료를 지불했습니다.",
-      lesson: "전세 대출 조항을 항상 확인하고 어떤 약속을 하기 전에 집주인으로부터 서면 허가를 받으세요.",
-      bgColor: "bg-pastel-lavender"
-    }
-  ]
+  const filteredGuides = selectedCategory === 'all' 
+    ? guides 
+    : guides.filter(guide => guide.category === selectedCategory)
 
-  const redFlags = [
-    "검토할 시간 없이 즉시 서명하도록 압박",
-    "서면 계약에 포함되지 않은 구두 약속",
-    "이상한 보증금 금액이나 결제 방법",
-    "모호한 유지보수 책임 조항",
-    "기존 손상에 대한 항목별 목록 없음",
-    "합리적이지 않은 제한이나 규칙"
-  ]
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case '초급': return 'bg-green-100 text-green-800'
+      case '중급': return 'bg-yellow-100 text-yellow-800'
+      case '고급': return 'bg-red-100 text-red-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
+  }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-brand-bg">
       <Navigation />
       
       {/* Header */}
-      <section className="bg-gradient-to-br from-pastel-peach via-pastel-cream to-pastel-warm py-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-display font-bold text-warm-900 mb-4">
-            임대 계약 가이드
-          </h1>
-          <p className="text-xl text-warm-700 leading-relaxed">
-            임대 계약을 자신 있게 탐색할 수 있도록 도와주는 필수 지식과 실제 경험
-          </p>
+      <div className="bg-brand-card border-b border-brand-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-brand-ink mb-2">계약 가이드</h1>
+            <p className="text-brand-muted">임대차 계약에 필요한 모든 지식을 한 곳에서 확인하세요</p>
+          </div>
         </div>
-      </section>
-
-      {/* Essential Points */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-display font-bold text-warm-900 mb-4">
-              알아야 할 필수 사항
-            </h2>
-            <p className="text-lg text-warm-600 max-w-2xl mx-auto">
-              모든 임차인이 계약을 서명하기 전에 이해해야 하는 중요한 영역들입니다.
-            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {essentialPoints.map((point, index) => {
-              const Icon = point.icon
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Categories */}
+        <div className="mb-8">
+          <div className="flex flex-wrap gap-3 justify-center">
+            {categories.map((category) => {
+              const Icon = category.icon
               return (
-                <div key={index} className="card">
-                  <div className="flex items-center mb-4">
-                    <div className="w-10 h-10 bg-gradient-to-r from-warm-400 to-warm-600 rounded-lg flex items-center justify-center mr-3">
-                      <Icon className="w-5 h-5 text-white" />
-                    </div>
-                    <h3 className="text-xl font-semibold text-warm-900">{point.title}</h3>
-                  </div>
-                  <p className="text-warm-600 mb-4">{point.description}</p>
-                  <ul className="space-y-2">
-                    {point.tips.map((tip, tipIndex) => (
-                      <li key={tipIndex} className="flex items-start text-sm text-warm-700">
-                        <CheckCircle className="w-4 h-4 text-warm-500 mr-2 mt-0.5 flex-shrink-0" />
-                        {tip}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`flex items-center space-x-2 px-4 py-3 rounded-xl transition-colors ${
+                    selectedCategory === category.id
+                      ? 'bg-brand-accent text-white'
+                      : 'bg-brand-card text-brand-ink hover:bg-brand-accent hover:text-white border border-brand-border'
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="font-semibold">{category.name}</span>
+                </button>
               )
             })}
           </div>
         </div>
-      </section>
 
-      {/* Red Flags */}
-      <section className="py-20 bg-pastel-mint">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-display font-bold text-warm-900 mb-4">
-              주의해야 할 위험 신호
-            </h2>
-            <p className="text-lg text-warm-600">
-              멈추고 재고해야 할 경고 신호들
-            </p>
+        {/* Guides Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredGuides.map((guide) => (
+            <div key={guide.id} className="bg-brand-card rounded-2xl shadow-soft border border-brand-border hover:shadow-medium transition-all duration-200">
+              <div className="p-6">
+                {/* Header */}
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-brand-ink mb-2 line-clamp-2">
+                      {guide.title}
+                    </h3>
+                    <p className="text-sm text-brand-muted line-clamp-2 mb-3">
+                      {guide.summary}
+                    </p>
+                  </div>
+                  {guide.isNew && (
+                    <span className="px-2 py-1 bg-brand-accent text-white text-xs rounded-full font-semibold ml-2 flex-shrink-0">
+                      NEW
+                    </span>
+                  )}
           </div>
 
-          <div className="card">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {redFlags.map((flag, index) => (
-                <div key={index} className="flex items-start">
-                  <AlertCircle className="w-5 h-5 text-red-500 mr-3 mt-0.5 flex-shrink-0" />
-                  <span className="text-warm-700">{flag}</span>
+                {/* Meta Info */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getDifficultyColor(guide.difficulty)}`}>
+                      {guide.difficulty}
+                    </span>
+                    <span className="flex items-center text-sm text-brand-muted">
+                      <Clock className="w-4 h-4 mr-1" />
+                      {guide.readTime}
+                    </span>
                 </div>
-              ))}
-            </div>
+                  <div className="flex items-center space-x-1">
+                    <span className="text-sm font-bold text-brand-ink">{guide.rating}</span>
+                    <span className="text-sm text-brand-muted">/5</span>
           </div>
         </div>
-      </section>
 
-      {/* Case Studies */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-display font-bold text-warm-900 mb-4">
-              우리 커뮤니티의 실제 이야기
-            </h2>
-            <p className="text-lg text-warm-600 max-w-2xl mx-auto">
-              어려운 상황을 극복한 동료 임차인들의 경험에서 배워보세요
-            </p>
+                {/* Tags */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {guide.tags.map((tag) => (
+                    <span key={tag} className="px-2 py-1 bg-brand-surface text-brand-accent text-xs rounded-full">
+                      #{tag}
+                    </span>
+                  ))}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {caseStudies.map((study, index) => (
-              <div key={index} className={`${study.bgColor} rounded-2xl p-6 shadow-soft`}>
-                <div className="flex items-center mb-4">
-                  <Book className="w-6 h-6 text-warm-700 mr-2" />
-                  <span className="text-sm font-medium text-warm-600 uppercase tracking-wide">
-                    {study.category}
+                {/* Stats */}
+                <div className="flex items-center justify-between text-sm text-brand-muted mb-4">
+                  <span className="flex items-center">
+                    <Download className="w-4 h-4 mr-1" />
+                    {guide.downloads}회 다운로드
                   </span>
                 </div>
                 
-                <h3 className="text-xl font-semibold text-warm-900 mb-2">
-                  {study.title}
-                </h3>
-                
-                <p className="text-sm text-warm-600 mb-4">작성자: {study.author}</p>
-                
-                <p className="text-warm-700 mb-4 leading-relaxed">
-                  {study.story}
-                </p>
-                
-                <div className="bg-white/60 rounded-lg p-4">
-                  <h4 className="font-semibold text-warm-900 mb-2 flex items-center">
-                    <CheckCircle className="w-4 h-4 text-warm-600 mr-2" />
-                    핵심 교훈
-                  </h4>
-                  <p className="text-sm text-warm-700">{study.lesson}</p>
+                {/* Actions */}
+                <div className="flex space-x-2">
+                  <button className="flex-1 bg-brand-accent text-white px-4 py-2 rounded-lg hover:bg-brand-accent700 transition-colors font-semibold text-sm flex items-center justify-center space-x-2">
+                    <BookOpen className="w-4 h-4" />
+                    <span>가이드 보기</span>
+                  </button>
+                  <button className="px-4 py-2 bg-brand-surface text-brand-ink rounded-lg hover:bg-brand-card transition-colors border border-brand-border">
+                    <Download className="w-4 h-4" />
+                  </button>
+                </div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
-      </section>
 
-      {/* Share Your Story CTA */}
-      <section className="py-20 bg-gradient-to-r from-warm-500 to-warm-600">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-display font-bold text-white mb-4">
-            계약 관련 이야기를 공유하고 싶으신가요?
+        {/* Quick Tips */}
+        <div className="mt-12 bg-brand-accent rounded-2xl p-8 text-white">
+          <h2 className="text-2xl font-bold mb-6 flex items-center">
+            <AlertTriangle className="w-6 h-6 mr-2" />
+            계약 시 주의사항
           </h2>
-          <p className="text-xl text-warm-100 mb-8">
-            성공 사례와 교훈을 공유하여 다른 임차인들을 도와주세요
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-white text-warm-600 px-8 py-4 rounded-xl font-semibold hover:bg-pastel-cream transition-colors duration-200">
-              이야기 공유하기
-            </button>
-            <button className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-warm-600 transition-all duration-200">
-              질문하기
-            </button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <div className="flex items-start space-x-2">
+                <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                <span>입주 시 모든 방의 사진을 촬영하여 보관하세요</span>
+              </div>
+              <div className="flex items-start space-x-2">
+                <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                <span>계약서에 명시되지 않은 구두 약속은 믿지 마세요</span>
+              </div>
+              <div className="flex items-start space-x-2">
+                <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                <span>보증금은 별도 계좌에 보관되어야 합니다</span>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-start space-x-2">
+                <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                <span>월세 인상은 법적으로 제한되어 있습니다</span>
+              </div>
+              <div className="flex items-start space-x-2">
+                <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                <span>문제 발생 시 전문가 상담을 받으세요</span>
+              </div>
+              <div className="flex items-start space-x-2">
+                <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                <span>계약서 사본을 반드시 보관하세요</span>
+              </div>
+            </div>
+          </div>
           </div>
         </div>
-      </section>
     </div>
   )
 }
