@@ -509,73 +509,40 @@ export default function DiscussionDetailPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 게시글 헤더 */}
         <div className="bg-brand-card rounded-2xl shadow-soft border border-brand-border p-6 mb-6">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex-1">
-              {/* 수정/삭제 버튼 */}
-              <div className="flex items-center space-x-2 mb-4">
-                <button
-                  onClick={() => {
-                    setEditTitle(post.title)
-                    setEditContent(post.content)
-                    setSelectedTags(post.tags || [])
-                    setMarketTrend(post.marketTrend)
-                    setShowEditModal(true)
-                  }}
-                  className="inline-flex items-center px-3 py-2 bg-blue-100 text-blue-700 text-sm font-medium rounded-lg hover:bg-blue-200 transition-colors"
+          {/* 제목과 메타데이터 */}
+          <div className="mb-6">
+            <div className="flex items-center space-x-2 mb-3">
+              <h1 className="text-2xl font-bold text-brand-ink">{post.title}</h1>
+              {post.marketTrend && getMarketTrendIcon(post.marketTrend)}
+            </div>
+            
+            <div className="flex items-center space-x-4 text-sm text-brand-muted mb-3">
+              <span className="flex items-center space-x-1">
+                <Clock className="w-4 h-4" />
+                <span>{getTimeAgo(post.createdAt)}</span>
+              </span>
+              <span className="flex items-center space-x-1">
+                <Eye className="w-4 h-4" />
+                <span>조회 {post.views}</span>
+              </span>
+              <span className="flex items-center space-x-1">
+                <MessageSquare className="w-4 h-4" />
+                <span>댓글 {post.commentCount}</span>
+              </span>
+            </div>
+            
+            <div className="flex items-center space-x-2 mb-4">
+              {post.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="px-3 py-1 bg-brand-accent/10 text-brand-accent text-sm rounded-full border border-brand-accent/20"
                 >
-                  <Edit className="w-4 h-4 mr-2" />
-                  수정
-                </button>
-                <button
-                  onClick={() => setShowDeleteModal(true)}
-                  className="inline-flex items-center px-3 py-2 bg-red-100 text-red-700 text-sm font-medium rounded-lg hover:bg-red-200 transition-colors"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  삭제
-                </button>
-              </div>
-              <div className="flex items-center space-x-2 mb-2">
-                <Link
-                  href="/forum"
-                  className="inline-flex items-center px-3 py-2 bg-brand-accent/10 text-brand-accent text-sm font-medium rounded-lg hover:bg-brand-accent/20 transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  목록으로
-                </Link>
-              </div>
-              <div className="flex items-center space-x-2 mb-2">
-                <h1 className="text-2xl font-bold text-brand-ink">{post.title}</h1>
-                {post.marketTrend && getMarketTrendIcon(post.marketTrend)}
-              </div>
-              
-              <div className="flex items-center space-x-4 text-sm text-brand-muted mb-3">
-                <span className="flex items-center space-x-1">
-                  <Clock className="w-4 h-4" />
-                  <span>{getTimeAgo(post.createdAt)}</span>
+                  {tag}
                 </span>
-                <span className="flex items-center space-x-1">
-                  <Eye className="w-4 h-4" />
-                  <span>조회 {post.views}</span>
-                </span>
-                <span className="flex items-center space-x-1">
-                  <MessageSquare className="w-4 h-4" />
-                  <span>댓글 {post.commentCount}</span>
-                </span>
-              </div>
-              
-              <div className="flex items-center space-x-2 mb-4">
-                {post.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="px-3 py-1 bg-brand-accent/10 text-brand-accent text-sm rounded-full border border-brand-accent/20"
-                  >
-                    {tag}
-                  </span>
-                ))}
-                {post.isHot && <span className="px-2 py-1 bg-red-100 text-red-800 text-sm rounded-full">HOT</span>}
-                {post.isNew && <span className="px-2 py-1 bg-green-100 text-green-800 text-sm rounded-full">NEW</span>}
-                {post.adminPick && <span className="px-2 py-1 bg-brand-gold text-white text-sm rounded-full">추천</span>}
-              </div>
+              ))}
+              {post.isHot && <span className="px-2 py-1 bg-red-100 text-red-800 text-sm rounded-full">HOT</span>}
+              {post.isNew && <span className="px-2 py-1 bg-green-100 text-green-800 text-sm rounded-full">NEW</span>}
+              {post.adminPick && <span className="px-2 py-1 bg-brand-gold text-white text-sm rounded-full">추천</span>}
             </div>
           </div>
           
@@ -586,31 +553,37 @@ export default function DiscussionDetailPage() {
             </div>
           </div>
           
-          {/* 액션 버튼 */}
+          {/* 액션 버튼들 (한 줄로 정렬) */}
           <div className="flex items-center justify-between pt-4 border-t border-brand-border">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={handleLike}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                  isLiked
-                    ? 'bg-brand-accent text-white'
-                    : 'bg-brand-surface text-brand-muted hover:bg-brand-accent hover:text-white'
-                }`}
+            <div className="flex items-center space-x-3">
+              <Link
+                href="/forum"
+                className="inline-flex items-center px-3 py-2 bg-brand-accent/10 text-brand-accent text-sm font-medium rounded-lg hover:bg-brand-accent/20 transition-colors"
               >
-                <ThumbsUp className="w-4 h-4" />
-                <span>공감 {post.upvotes}</span>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                목록으로
+              </Link>
+              
+              <button
+                onClick={() => {
+                  setEditTitle(post.title)
+                  setEditContent(post.content)
+                  setSelectedTags(post.tags || [])
+                  setMarketTrend(post.marketTrend)
+                  setShowEditModal(true)
+                }}
+                className="inline-flex items-center px-3 py-2 bg-blue-100 text-blue-700 text-sm font-medium rounded-lg hover:bg-blue-200 transition-colors"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                수정
               </button>
               
               <button
-                onClick={handleDislike}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                  isDisliked
-                    ? 'bg-red-500 text-white'
-                    : 'bg-brand-surface text-brand-muted hover:bg-red-500 hover:text-white'
-                }`}
+                onClick={() => setShowDeleteModal(true)}
+                className="inline-flex items-center px-3 py-2 bg-red-100 text-red-700 text-sm font-medium rounded-lg hover:bg-red-200 transition-colors"
               >
-                <ThumbsDown className="w-4 h-4" />
-                <span>비공감 {post.downvotes}</span>
+                <Trash2 className="w-4 h-4 mr-2" />
+                삭제
               </button>
             </div>
             
@@ -632,6 +605,33 @@ export default function DiscussionDetailPage() {
                 <span>공유</span>
               </button>
             </div>
+          </div>
+          
+          {/* 공감/비공감 버튼 */}
+          <div className="flex items-center justify-center space-x-6 py-4 border-t border-brand-border">
+            <button
+              onClick={handleLike}
+              className={`flex items-center space-x-2 px-6 py-3 rounded-lg transition-colors ${
+                isLiked
+                  ? 'bg-brand-accent text-white shadow-md'
+                  : 'bg-brand-surface text-brand-muted hover:bg-brand-accent hover:text-white hover:shadow-md'
+              }`}
+            >
+              <ThumbsUp className="w-5 h-5" />
+              <span className="font-medium">공감 {post.upvotes}</span>
+            </button>
+            
+            <button
+              onClick={handleDislike}
+              className={`flex items-center space-x-2 px-6 py-3 rounded-lg transition-colors ${
+                isDisliked
+                  ? 'bg-red-500 text-white shadow-md'
+                  : 'bg-brand-surface text-brand-muted hover:bg-red-500 hover:text-white hover:shadow-md'
+              }`}
+            >
+              <ThumbsDown className="w-5 h-5" />
+              <span className="font-medium">비공감 {post.downvotes}</span>
+            </button>
           </div>
         </div>
 
