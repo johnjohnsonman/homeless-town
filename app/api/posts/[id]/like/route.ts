@@ -69,7 +69,7 @@ export async function POST(
 
       return NextResponse.json({ liked: false })
     } else {
-      // 좋아요 추가
+      // 좋아요 추가 (익명 사용자 지원)
       await prisma.like.create({
         data: {
           userId,

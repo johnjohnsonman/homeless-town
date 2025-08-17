@@ -20,9 +20,9 @@ export async function GET(request: NextRequest) {
     // 검색 조건
     const where = search ? {
       OR: [
-        { username: { contains: search, mode: 'insensitive' } },
-        { name: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } }
+        { username: { contains: search } },
+        { name: { contains: search } },
+        { email: { contains: search } }
       ]
     } : {}
 

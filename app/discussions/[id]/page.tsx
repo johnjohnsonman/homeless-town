@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Navigation from '../../../components/Navigation'
 import { 
@@ -15,9 +15,19 @@ import {
   TrendingUp,
   TrendingDown,
   Star,
-  Fire,
+  Flame,
   Zap,
-  Target
+  Target,
+  ArrowLeft,
+  Edit,
+  Trash2,
+  Home,
+  FileText,
+  AlertTriangle,
+  Shield,
+  Calculator,
+  Scale,
+  Users
 } from 'lucide-react'
 
 interface Post {
@@ -25,6 +35,7 @@ interface Post {
   title: string
   content: string
   author: string
+  nickname?: string
   type: string
   marketTrend: 'up' | 'down' | null
   isHot: boolean
@@ -54,6 +65,7 @@ interface Comment {
 
 export default function DiscussionDetailPage() {
   const params = useParams()
+  const router = useRouter()
   const postId = params.id as string
   
   const [post, setPost] = useState<Post | null>(null)
@@ -65,9 +77,42 @@ export default function DiscussionDetailPage() {
   const [isBookmarked, setIsBookmarked] = useState(false)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [password, setPassword] = useState('')
+  const [isEditing, setIsEditing] = useState(false)
+  const [editTitle, setEditTitle] = useState('')
+  const [editContent, setEditContent] = useState('')
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [marketTrend, setMarketTrend] = useState<'up' | 'down' | null>(null)
 
   // 임시 사용자 ID (실제로는 인증 시스템에서 가져와야 함)
-  const currentUserId = 'user1'
+  // 현재는 익명 사용자로 처리
+  const currentUserId = `anonymous_${Date.now()}`
+
+  // 사용 가능한 태그들
+  const availableTags = [
+    { name: '시황', icon: <TrendingUp className="w-4 h-4" /> },
+    { name: '부동산시장', icon: <Home className="w-4 h-4" /> },
+    { name: '임대시장', icon: <FileText className="w-4 h-4" /> },
+    { name: '분쟁사례', icon: <AlertTriangle className="w-4 h-4" /> },
+    { name: '보증금', icon: <Shield className="w-4 h-4" /> },
+    { name: '월세인상', icon: <Calculator className="w-4 h-4" /> },
+    { name: '계약해지', icon: <Scale className="w-4 h-4" /> },
+    { name: '입주체크', icon: <Users className="w-4 h-4" /> },
+    { name: '집주인소통', icon: <MessageSquare className="w-4 h-4" /> },
+    { name: '법적권리', icon: <Shield className="w-4 h-4" /> },
+    { name: '안전수칙', icon: <AlertTriangle className="w-4 h-4" /> }
+  ]
+
+  // 태그 토글 함수
+  const handleTagToggle = (tagName: string) => {
+    setSelectedTags(prev => 
+      prev.includes(tagName) 
+        ? prev.filter(tag => tag !== tagName)
+        : [...prev, tagName]
+    )
+  }
 
   useEffect(() => {
     const fetchPostData = async () => {
@@ -78,37 +123,8 @@ export default function DiscussionDetailPage() {
           const data = await response.json()
           setPost(data.post)
         } else {
-          // 샘플 데이터 사용
-          setPost({
-            id: postId,
-            title: '보증금 반환 문제 해결 경험 공유',
-            content: `집주인과의 보증금 반환 문제를 해결한 경험을 공유합니다. 
-
-처음에 집주인이 보증금을 반환하지 않겠다고 했을 때 정말 당황스러웠어요. 하지만 법적 절차를 따라가면서 결국 성공적으로 해결할 수 있었습니다.
-
-주요 포인트들:
-1. 임대차계약서와 보증금 영수증 보관
-2. 퇴거 시 사진 촬영 및 동행 확인
-3. 법무법인 상담 및 내용증명 발송
-4. 소액사건심판원 신청
-
-이 과정에서 많은 분들이 도움을 주셨고, 특히 무주택촌 커뮤니티의 정보가 정말 유용했어요. 비슷한 상황에 처한 분들에게 도움이 되길 바랍니다.`,
-            author: 'user2',
-            type: 'discussion',
-            marketTrend: null,
-            isHot: false,
-            isNew: false,
-            isPopular: true,
-            urgent: false,
-            verified: true,
-            createdAt: '2024-01-15T10:00:00Z',
-            upvotes: 25,
-            downvotes: 2,
-            views: 234,
-            commentCount: 8,
-            adminPick: true,
-            tags: ['계약', '법률', '보증금']
-          })
+          // API 실패 시 빈 데이터로 설정
+          setPost(null)
         }
       } catch (error) {
         console.error('Failed to fetch post:', error)
@@ -130,40 +146,8 @@ export default function DiscussionDetailPage() {
           const data = await response.json()
           setComments(data.comments || [])
         } else {
-          // 샘플 댓글 데이터
-          setComments([
-            {
-              id: '1',
-              content: '정말 유용한 정보네요! 저도 비슷한 경험이 있어서 도움이 많이 됐습니다.',
-              author: 'user1',
-              authorName: '김철수',
-              createdAt: '2024-01-15T11:00:00Z',
-              likes: 5,
-              dislikes: 0,
-              replies: []
-            },
-            {
-              id: '2',
-              content: '보증금 반환 문제는 정말 까다롭죠. 법적 절차를 잘 따라야 합니다.',
-              author: 'user3',
-              authorName: '박민수',
-              createdAt: '2024-01-15T12:00:00Z',
-              likes: 8,
-              dislikes: 0,
-              replies: [
-                {
-                  id: '2-1',
-                  content: '맞습니다. 특히 사진 촬영이 중요해요.',
-                  author: 'user1',
-                  authorName: '김철수',
-                  createdAt: '2024-01-15T12:30:00Z',
-                  likes: 3,
-                  dislikes: 0,
-                  replies: []
-                }
-              ]
-            }
-          ])
+          // API 실패 시 빈 배열로 설정
+          setComments([])
         }
       } catch (error) {
         console.error('Failed to fetch comments:', error)
@@ -295,6 +279,76 @@ export default function DiscussionDetailPage() {
     }
   }
 
+  const handleEdit = async () => {
+    if (!password.trim()) {
+      alert('비밀번호를 입력해주세요.')
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/discussions/${postId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: editTitle,
+          content: editContent,
+          tags: selectedTags,
+          marketTrend,
+          password
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setPost(data.post)
+        setIsEditing(false)
+        setShowEditModal(false)
+        setPassword('')
+        alert('글이 수정되었습니다.')
+      } else {
+        const errorData = await response.json()
+        alert(errorData.error || '수정에 실패했습니다.')
+      }
+    } catch (error) {
+      console.error('Failed to edit post:', error)
+      alert('수정 중 오류가 발생했습니다.')
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!password.trim()) {
+      alert('비밀번호를 입력해주세요.')
+      return
+    }
+
+    if (!confirm('정말로 이 글을 삭제하시겠습니까?')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/discussions/${postId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password }),
+      })
+
+      if (response.ok) {
+        alert('글이 삭제되었습니다.')
+        router.push('/forum')
+      } else {
+        const errorData = await response.json()
+        alert(errorData.error || '삭제에 실패했습니다.')
+      }
+    } catch (error) {
+      console.error('Failed to delete post:', error)
+      alert('삭제 중 오류가 발생했습니다.')
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-brand-bg">
@@ -333,6 +387,38 @@ export default function DiscussionDetailPage() {
         <div className="bg-brand-card rounded-2xl shadow-soft border border-brand-border p-6 mb-6">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
+              {/* 수정/삭제 버튼 */}
+              <div className="flex items-center space-x-2 mb-4">
+                <button
+                  onClick={() => {
+                    setEditTitle(post.title)
+                    setEditContent(post.content)
+                    setSelectedTags(post.tags || [])
+                    setMarketTrend(post.marketTrend)
+                    setShowEditModal(true)
+                  }}
+                  className="inline-flex items-center px-3 py-2 bg-blue-100 text-blue-700 text-sm font-medium rounded-lg hover:bg-blue-200 transition-colors"
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  수정
+                </button>
+                <button
+                  onClick={() => setShowDeleteModal(true)}
+                  className="inline-flex items-center px-3 py-2 bg-red-100 text-red-700 text-sm font-medium rounded-lg hover:bg-red-200 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  삭제
+                </button>
+              </div>
+              <div className="flex items-center space-x-2 mb-2">
+                <Link
+                  href="/forum"
+                  className="inline-flex items-center px-3 py-2 bg-brand-accent/10 text-brand-accent text-sm font-medium rounded-lg hover:bg-brand-accent/20 transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  목록으로
+                </Link>
+              </div>
               <div className="flex items-center space-x-2 mb-2">
                 <h1 className="text-2xl font-bold text-brand-ink">{post.title}</h1>
                 {post.marketTrend && getMarketTrendIcon(post.marketTrend)}
@@ -542,6 +628,236 @@ export default function DiscussionDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* 수정 모달 */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 overflow-y-auto py-8">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-4xl mx-4 mt-8 mb-8">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-2xl font-bold text-gray-900">글 수정</h3>
+              <button
+                onClick={() => {
+                  setShowEditModal(false)
+                  setPassword('')
+                  setEditTitle('')
+                  setEditContent('')
+                  setSelectedTags([])
+                  setMarketTrend(null)
+                }}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {/* 닉네임 (고정 표시) */}
+              <div className="pt-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  닉네임
+                </label>
+                <div className="px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg text-gray-600">
+                  {post?.nickname || '익명'}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">닉네임은 수정할 수 없습니다</p>
+              </div>
+
+              {/* 제목 */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  제목 *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base transition-all"
+                  placeholder="토론글의 제목을 입력하세요"
+                  maxLength={100}
+                />
+                <p className="text-xs sm:text-sm text-gray-500 mt-2 flex items-center">
+                  <span className="bg-gray-100 px-2 py-1 rounded-full mr-2">{editTitle.length}/100</span>
+                  명확하고 구체적인 제목을 작성하면 더 많은 분들이 참여할 수 있습니다
+                </p>
+              </div>
+
+              {/* 시황 */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  시황
+                </label>
+                <div className="flex space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setMarketTrend('up')}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-all ${
+                      marketTrend === 'up'
+                        ? 'border-green-500 bg-green-50 text-green-700'
+                        : 'border-gray-300 hover:border-green-300'
+                    }`}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                    <span>상승</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMarketTrend('down')}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-all ${
+                      marketTrend === 'down'
+                        ? 'border-red-500 bg-red-50 text-red-700'
+                        : 'border-gray-300 hover:border-red-300'
+                    }`}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                    </svg>
+                    <span>하락</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMarketTrend(null)}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-all ${
+                      marketTrend === null
+                        ? 'border-gray-500 bg-gray-50 text-gray-700'
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>중립</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 태그 선택 */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  태그 선택
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {availableTags.map((tag) => (
+                    <button
+                      key={tag.name}
+                      type="button"
+                      onClick={() => handleTagToggle(tag.name)}
+                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg border transition-all text-sm ${
+                        selectedTags.includes(tag.name)
+                          ? 'border-blue-500 bg-blue-50 text-blue-700'
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
+                    >
+                      {tag.icon}
+                      <span>{tag.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 내용 */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  내용 *
+                </label>
+                <textarea
+                  required
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base transition-all resize-none"
+                  placeholder="토론글의 내용을 자세히 작성해주세요..."
+                  rows={8}
+                  maxLength={2000}
+                />
+                <p className="text-xs sm:text-sm text-gray-500 mt-2 flex items-center">
+                  <span className="bg-gray-100 px-2 py-1 rounded-full mr-2">{editContent.length}/2000</span>
+                  구체적인 사례나 경험을 포함하면 더 유용한 토론이 될 수 있습니다
+                </p>
+              </div>
+
+              {/* 비밀번호 */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  비밀번호 *
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base transition-all"
+                  placeholder="비밀번호를 입력하세요"
+                  maxLength={20}
+                />
+                <p className="text-xs text-gray-500 mt-1">글 수정 시 필요합니다</p>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-10 pt-8 border-t border-gray-200">
+              <button
+                onClick={() => {
+                  setShowEditModal(false)
+                  setPassword('')
+                  setEditTitle('')
+                  setEditContent('')
+                  setSelectedTags([])
+                  setMarketTrend(null)
+                }}
+                className="px-6 py-3 text-gray-600 hover:text-gray-800 transition-colors font-medium"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleEdit}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                수정 완료
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 삭제 모달 */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
+            <h3 className="text-xl font-bold mb-4">글 삭제</h3>
+            <p className="text-gray-600 mb-4">정말로 이 글을 삭제하시겠습니까?</p>
+            <div>
+              <label className="block text-sm font-medium mb-2">비밀번호</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="비밀번호를 입력하세요"
+              />
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false)
+                  setPassword('')
+                }}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                삭제
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 } 

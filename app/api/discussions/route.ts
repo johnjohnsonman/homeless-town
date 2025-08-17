@@ -18,8 +18,8 @@ export async function GET(request: NextRequest) {
     
     if (search) {
       where.OR = [
-        { title: { contains: search, mode: 'insensitive' } },
-        { content: { contains: search, mode: 'insensitive' } }
+        { title: { contains: search } },
+        { content: { contains: search } }
       ]
     }
 
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
       views: post.views || 0,
       upvotes: post.upvotes || 0,
       downvotes: post.downvotes || 0,
-      comments: post.comments || 0,
+      commentCount: post.commentCount || 0,
       createdAt: post.createdAt,
       updatedAt: post.updatedAt,
       tags: post.tags.map(pt => pt.tag.name),
@@ -96,36 +96,55 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     console.log('Creating new discussion:', body)
     
-    const { title, content, tags, marketTrend, author = '익명' } = body
+    const { title, content, tags, marketTrend, nickname, password } = body
 
     // 필수 필드 검증
-    if (!title || !content) {
+    if (!title || !content || !nickname || !password) {
       return NextResponse.json(
-        { error: '제목과 내용은 필수입니다.' },
+        { error: '제목, 내용, 닉네임, 비밀번호는 필수입니다.' },
         { status: 400 }
       )
     }
 
-    // slug 생성 (제목 기반)
-    const slug = title
+    // slug 생성 (제목 기반, 중복 방지)
+    let baseSlug = title
       .toLowerCase()
       .replace(/[^a-z0-9가-힣]/g, '-')
       .replace(/-+/g, '-')
       .replace(/^-|-$/g, '')
       .substring(0, 100)
+    
+    let slug = baseSlug
+    let counter = 1
+    
+    // slug 중복 확인 및 해결
+    while (true) {
+      const existingPost = await prisma.post.findUnique({
+        where: { slug }
+      })
+      
+      if (!existingPost) {
+        break
+      }
+      
+      slug = `${baseSlug}-${counter}`
+      counter++
+    }
 
     // 새 토론글 생성
     const newPost = await prisma.post.create({
       data: {
         title,
         content,
-        author,
+        author: null,
+        nickname,
+        password,
         marketTrend,
         slug,
         views: 0,
         upvotes: 0,
         downvotes: 0,
-        comments: 0,
+        commentCount: 0,
         isHot: false,
         isNew: true,
         isPopular: false,
@@ -162,11 +181,12 @@ export async function POST(request: NextRequest) {
       id: newPost.id,
       title: newPost.title,
       content: newPost.content,
-      author: newPost.author,
+      author: '익명',
+      nickname: newPost.nickname,
       views: newPost.views,
       upvotes: newPost.upvotes,
       downvotes: newPost.downvotes,
-      comments: newPost.comments,
+      commentCount: newPost.commentCount,
       createdAt: newPost.createdAt,
       updatedAt: newPost.updatedAt,
       tags: tags || [],

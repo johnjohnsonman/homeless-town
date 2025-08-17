@@ -63,6 +63,8 @@ model Post {
   slug        String     @unique
   content     String
   author      String?
+  nickname    String     // DC인사이드 스타일 닉네임
+  password    String     // DC인사이드 스타일 비밀번호
   type        String     @default("post") // "post", "discussion", "housing"
   marketTrend String?    // "up", "down", null
   isHot       Boolean    @default(false)
@@ -125,8 +127,8 @@ model Like {
   postId    String
   createdAt DateTime @default(now())
   
-  // 관계
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // 관계 (익명 사용자 지원)
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
   
   @@unique([userId, postId])
@@ -140,11 +142,10 @@ model Dislike {
   postId    String
   createdAt DateTime @default(now())
   
-  // 관계
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // 관계 (익명 사용자 지원)
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
   
-  @@unique([userId, postId])
   @@index([userId])
   @@index([postId])
 }

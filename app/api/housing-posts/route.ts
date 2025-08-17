@@ -19,8 +19,8 @@ export async function GET(request: NextRequest) {
     
     if (search) {
       where.OR = [
-        { title: { contains: search, mode: 'insensitive' } },
-        { content: { contains: search, mode: 'insensitive' } }
+        { title: { contains: search } },
+        { content: { contains: search } }
       ]
     }
 
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (location) {
-      where.location = { contains: location, mode: 'insensitive' }
+              where.location = { contains: location }
     }
 
     // 게시글 데이터 조회

@@ -22,6 +22,7 @@ interface Post {
   id: string
   title: string
   author: string
+  nickname?: string
   createdAt: string
   upvotes: number
   downvotes: number
@@ -63,329 +64,27 @@ export default function ForumPage() {
   const [loading, setLoading] = useState(true)
   const postsPerPage = 10
 
-  // 샘플 데이터 (API 연동 전까지 사용)
-  const samplePosts: Post[] = [
-    {
-      id: '1',
-      title: '월세 인상에 대한 대응 방안 토론',
-      author: '임차인A',
-      createdAt: '2024-01-15T10:00:00Z',
-      upvotes: 45,
-      downvotes: 3,
-      views: 234,
-      comments: 18,
-      tags: ['시황', '월세인상'],
-      marketTrend: 'up',
-      isHot: true,
-      isNew: false,
-      isPopular: true,
-      adminPick: false
-    },
-    {
-      id: '2',
-      title: '보증금 반환 문제 해결 경험 공유',
-      author: '임차인B',
-      createdAt: '2024-01-15T09:30:00Z',
-      upvotes: 32,
-      downvotes: 1,
-      views: 189,
-      comments: 12,
-      tags: ['보증금', '분쟁사례'],
-      marketTrend: null,
-      isHot: false,
-      isNew: true,
-      isPopular: false,
-      adminPick: true
-    },
-    {
-      id: '3',
-      title: '집주인과의 소통 방법 팁',
-      author: '임차인C',
-      createdAt: '2024-01-15T09:00:00Z',
-      upvotes: 28,
-      downvotes: 2,
-      views: 156,
-      comments: 8,
-      tags: ['집주인소통', '팁'],
-      marketTrend: null,
-      isHot: false,
-      isNew: true,
-      isPopular: false,
-      adminPick: false
-    },
-    {
-      id: '4',
-      title: '부동산 시장 전망과 임차인 전략',
-      author: '전문가D',
-      createdAt: '2024-01-15T08:30:00Z',
-      upvotes: 67,
-      downvotes: 5,
-      views: 456,
-      comments: 25,
-      tags: ['시황', '부동산시장'],
-      marketTrend: 'down',
-      isHot: true,
-      isNew: false,
-      isPopular: true,
-      adminPick: true
-    },
-    {
-      id: '5',
-      title: '계약서 체크리스트 공유',
-      author: '법무사E',
-      createdAt: '2024-01-15T08:00:00Z',
-      upvotes: 89,
-      downvotes: 2,
-      views: 678,
-      comments: 34,
-      tags: ['계약서', '법적권리'],
-      marketTrend: null,
-      isHot: true,
-      isNew: false,
-      isPopular: true,
-      adminPick: true
-    },
-    {
-      id: '6',
-      title: '입주 전 체크해야 할 사항들',
-      author: '임차인F',
-      createdAt: '2024-01-15T07:30:00Z',
-      upvotes: 41,
-      downvotes: 1,
-      views: 234,
-      comments: 15,
-      tags: ['입주체크', '안전수칙'],
-      marketTrend: null,
-      isHot: false,
-      isNew: true,
-      isPopular: false,
-      adminPick: false
-    },
-    {
-      id: '7',
-      title: '월세 vs 전세 비교 분석',
-      author: '분석가G',
-      createdAt: '2024-01-15T07:00:00Z',
-      upvotes: 56,
-      downvotes: 8,
-      views: 345,
-      comments: 22,
-      tags: ['시황', '투자'],
-      marketTrend: 'up',
-      isHot: false,
-      isNew: false,
-      isPopular: true,
-      adminPick: false
-    },
-    {
-      id: '8',
-      title: '집주인 불법 행위 대응 방법',
-      author: '변호사H',
-      createdAt: '2024-01-15T06:30:00Z',
-      upvotes: 78,
-      downvotes: 3,
-      views: 567,
-      comments: 28,
-      tags: ['법적권리', '분쟁사례'],
-      marketTrend: null,
-      isHot: true,
-      isNew: false,
-      isPopular: true,
-      adminPick: true
-    },
-    {
-      id: '9',
-      title: '주거 환경 개선 아이디어',
-      author: '디자이너I',
-      createdAt: '2024-01-15T06:00:00Z',
-      upvotes: 23,
-      downvotes: 2,
-      views: 123,
-      comments: 7,
-      tags: ['팁', '생활'],
-      marketTrend: null,
-      isHot: false,
-      isNew: true,
-      isPopular: false,
-      adminPick: false
-    },
-    {
-      id: '10',
-      title: '임대차 정책 변화 소식',
-      author: '기자J',
-      createdAt: '2024-01-15T05:30:00Z',
-      upvotes: 34,
-      downvotes: 4,
-      views: 234,
-      comments: 16,
-      tags: ['시황', '정책'],
-      marketTrend: 'up',
-      isHot: false,
-      isNew: true,
-      isPopular: false,
-      adminPick: false
-    },
-    {
-      id: '11',
-      title: '보증금 대출 상품 리뷰',
-      author: '금융전문가K',
-      createdAt: '2024-01-15T05:00:00Z',
-      upvotes: 45,
-      downvotes: 6,
-      views: 345,
-      comments: 19,
-      tags: ['보증금', '금융'],
-      marketTrend: null,
-      isHot: false,
-      isNew: false,
-      isPopular: true,
-      adminPick: false
-    },
-    {
-      id: '12',
-      title: '월세 협상 전략 가이드',
-      author: '협상전문가L',
-      createdAt: '2024-01-15T04:30:00Z',
-      upvotes: 67,
-      downvotes: 3,
-      views: 456,
-      comments: 24,
-      tags: ['월세인상', '협상'],
-      marketTrend: 'up',
-      isHot: true,
-      isNew: false,
-      isPopular: true,
-      adminPick: true
-    },
-    {
-      id: '13',
-      title: '집주인과의 갈등 해결 사례',
-      author: '중재자M',
-      createdAt: '2024-01-15T04:00:00Z',
-      upvotes: 52,
-      downvotes: 2,
-      views: 289,
-      comments: 18,
-      tags: ['분쟁사례', '중재'],
-      marketTrend: null,
-      isHot: false,
-      isNew: false,
-      isPopular: true,
-      adminPick: false
-    },
-    {
-      id: '14',
-      title: '안전한 임대차 계약 체결법',
-      author: '법무사N',
-      createdAt: '2024-01-15T03:30:00Z',
-      upvotes: 89,
-      downvotes: 1,
-      views: 678,
-      comments: 31,
-      tags: ['계약서', '안전수칙'],
-      marketTrend: null,
-      isHot: true,
-      isNew: false,
-      isPopular: true,
-      adminPick: true
-    },
-    {
-      id: '15',
-      title: '부동산 시장 동향 분석',
-      author: '분석가O',
-      createdAt: '2024-01-15T03:00:00Z',
-      upvotes: 76,
-      downvotes: 7,
-      views: 567,
-      comments: 26,
-      tags: ['시황', '부동산시장'],
-      marketTrend: 'down',
-      isHot: true,
-      isNew: false,
-      isPopular: true,
-      adminPick: true
-    },
-    {
-      id: '16',
-      title: '임차인 권리 보호 방법',
-      author: '인권변호사P',
-      createdAt: '2024-01-15T02:30:00Z',
-      upvotes: 98,
-      downvotes: 2,
-      views: 789,
-      comments: 42,
-      tags: ['법적권리', '인권'],
-      marketTrend: null,
-      isHot: true,
-      isNew: false,
-      isPopular: true,
-      adminPick: true
-    },
-    {
-      id: '17',
-      title: '월세 인상 제한 정책 소개',
-      author: '정책전문가Q',
-      createdAt: '2024-01-15T02:00:00Z',
-      upvotes: 67,
-      downvotes: 8,
-      views: 456,
-      comments: 23,
-      tags: ['정책', '월세인상'],
-      marketTrend: 'up',
-      isHot: false,
-      isNew: true,
-      isPopular: true,
-      adminPick: false
-    },
-    {
-      id: '18',
-      title: '집주인과의 우호적 관계 구축법',
-      author: '심리학자R',
-      createdAt: '2024-01-15T01:30:00Z',
-      upvotes: 34,
-      downvotes: 3,
-      views: 234,
-      comments: 12,
-      tags: ['집주인소통', '심리'],
-      marketTrend: null,
-      isHot: false,
-      isNew: true,
-      isPopular: false,
-      adminPick: false
-    },
-    {
-      id: '19',
-      title: '임대차 분쟁 예방 수칙',
-      author: '예방전문가S',
-      createdAt: '2024-01-15T01:00:00Z',
-      upvotes: 56,
-      downvotes: 2,
-      views: 345,
-      comments: 19,
-      tags: ['분쟁사례', '예방'],
-      marketTrend: null,
-      isHot: false,
-      isNew: false,
-      isPopular: true,
-      adminPick: false
-    },
-    {
-      id: '20',
-      title: '주거 환경 개선 프로젝트',
-      author: '건축가T',
-      createdAt: '2024-01-15T00:30:00Z',
-      upvotes: 23,
-      downvotes: 1,
-      views: 123,
-      comments: 6,
-      tags: ['생활', '개선'],
-      marketTrend: null,
-      isHot: false,
-      isNew: true,
-      isPopular: false,
-      adminPick: false
+  // 실제 API 데이터 사용
+  // API에서 데이터 가져오기
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch(`/api/discussions?page=${currentPage}&limit=${postsPerPage}&tag=${selectedTag}&search=${searchQuery}`)
+        const data = await response.json()
+        if (data.discussions) {
+          setPosts(data.discussions)
+        }
+      } catch (error) {
+        console.error('Failed to fetch posts:', error)
+      } finally {
+        setLoading(false)
+      }
     }
-  ]
+
+    fetchPosts()
+  }, [currentPage, selectedTag, searchQuery])
+      
 
   const samplePopularPosts: PopularPost[] = [
     {
@@ -440,7 +139,8 @@ export default function ForumPage() {
     }
   ]
 
-  const sampleTags: Tag[] = [
+  // 기본 태그 (API에서 가져올 예정)
+  const defaultTags: Tag[] = [
     { name: '시황', count: 156, isActive: selectedTag === '시황' },
     { name: '부동산시장', count: 89, isActive: selectedTag === '부동산시장' },
     { name: '임대시장', count: 67, isActive: selectedTag === '임대시장' },
@@ -465,19 +165,20 @@ export default function ForumPage() {
         const response = await fetch(`/api/discussions?page=${currentPage}&sort=${sortBy}&tag=${selectedTag}&search=${searchQuery}`)
         if (response.ok) {
           const data = await response.json()
-          setPosts(data.posts || samplePosts)
-          setPopularPosts(data.popularPosts || samplePopularPosts)
+          console.log('API Response:', data)
+          setPosts(data.discussions || [])
+          setPopularPosts(data.popularPosts || [])
         } else {
-          // API 실패 시 샘플 데이터 사용
-          setPosts(samplePosts)
+          // API 실패 시 기본 인기글 데이터 사용
+          setPosts([])
           setPopularPosts(samplePopularPosts)
         }
-  } catch (error) {
-        console.error('Failed to fetch data:', error)
-        // 에러 시 샘플 데이터 사용
-        setPosts(samplePosts)
-        setPopularPosts(samplePopularPosts)
-      } finally {
+          } catch (error) {
+          console.error('Failed to fetch data:', error)
+          // 에러 시 기본 인기글 데이터 사용
+          setPosts([])
+          setPopularPosts(samplePopularPosts)
+        } finally {
         setLoading(false)
       }
     }
@@ -560,7 +261,7 @@ export default function ForumPage() {
                 >
                   전체
                 </button>
-                {sampleTags.map((tag) => (
+                {defaultTags.map((tag) => (
                   <button
                     key={tag.name}
                     onClick={() => setSelectedTag(tag.name)}
@@ -695,7 +396,7 @@ export default function ForumPage() {
                           </span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <span>{post.author}</span>
+                          <span>{post.nickname || '익명'}</span>
                           <span className="flex items-center">
                             <Clock className="w-3 h-3 mr-1" />
                             {getTimeAgo(post.createdAt)}

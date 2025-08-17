@@ -7,6 +7,8 @@ import { ArrowLeft, TrendingUp, TrendingDown, Home, FileText, AlertTriangle, Use
 export default function NewDiscussionPage() {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
+  const [nickname, setNickname] = useState('')
+  const [password, setPassword] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [marketTrend, setMarketTrend] = useState<'up' | 'down' | null>(null)
   const [loading, setLoading] = useState(false)
@@ -57,7 +59,8 @@ export default function NewDiscussionPage() {
         content,
         tags: selectedTags,
         marketTrend,
-        author: '익명'
+        nickname,
+        password
       }
       
       console.log('Sending request to API:', requestBody)
@@ -154,6 +157,40 @@ export default function NewDiscussionPage() {
                 <span className="bg-gray-100 px-2 py-1 rounded-full mr-2">{title.length}/100</span>
                 명확하고 구체적인 제목을 작성하면 더 많은 분들이 참여할 수 있습니다
               </p>
+            </div>
+
+            {/* Nickname & Password */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  닉네임 *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base transition-all"
+                  placeholder="닉네임을 입력하세요"
+                  maxLength={20}
+                />
+                <p className="text-xs text-gray-500 mt-1">글 수정/삭제 시 필요합니다</p>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  비밀번호 *
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base transition-all"
+                  placeholder="비밀번호를 입력하세요"
+                  maxLength={20}
+                />
+                <p className="text-xs text-gray-500 mt-1">글 수정/삭제 시 필요합니다</p>
+              </div>
             </div>
 
             {/* Market Trend */}
