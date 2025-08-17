@@ -18,25 +18,7 @@ export async function GET(
         parentId: null // 대댓글이 아닌 최상위 댓글만
       },
       include: {
-        authorUser: {
-          select: {
-            id: true,
-            username: true,
-            name: true,
-            avatar: true
-          }
-        },
         replies: {
-          include: {
-            authorUser: {
-              select: {
-                id: true,
-                username: true,
-                name: true,
-                avatar: true
-              }
-            }
-          },
           orderBy: {
             createdAt: 'asc'
           }
@@ -92,16 +74,6 @@ export async function POST(
         author,
         postId,
         parentId: parentId || null
-      },
-      include: {
-        authorUser: {
-          select: {
-            id: true,
-            username: true,
-            name: true,
-            avatar: true
-          }
-        }
       }
     })
 
@@ -115,15 +87,7 @@ export async function POST(
       }
     })
 
-    // 사용자의 댓글 수 업데이트
-    await prisma.user.update({
-      where: { id: author },
-      data: {
-        totalComments: {
-          increment: 1
-        }
-      }
-    })
+    // 익명 사용자는 사용자 업데이트를 건너뜀
 
     return NextResponse.json({ comment }, { status: 201 })
   } catch (error) {

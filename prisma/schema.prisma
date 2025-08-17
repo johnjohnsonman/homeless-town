@@ -46,12 +46,7 @@ model User {
   
   // 관계
   posts     Post[]
-  comments  Comment[]
-  likes     Like[]
-  dislikes  Dislike[]
   bookmarks Bookmark[]
-  commentLikes    CommentLike[]
-  commentDislikes CommentDislike[]
   
   @@index([username])
   @@index([email])
@@ -107,10 +102,11 @@ model Comment {
   // 통계
   likes    Int @default(0)
   dislikes Int @default(0)
+  upvotes  Int @default(0)
+  downvotes Int @default(0)
   
   // 관계
   post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
-  authorUser User     @relation(fields: [author], references: [id])
   parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id])
   replies   Comment[] @relation("CommentReplies")
   commentLikes    CommentLike[]
@@ -127,11 +123,9 @@ model Like {
   postId    String
   createdAt DateTime @default(now())
   
-  // 관계 (익명 사용자 지원)
-  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // 관계
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
   
-  @@unique([userId, postId])
   @@index([userId])
   @@index([postId])
 }
@@ -142,8 +136,7 @@ model Dislike {
   postId    String
   createdAt DateTime @default(now())
   
-  // 관계 (익명 사용자 지원)
-  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // 관계
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
   
   @@index([userId])
@@ -157,7 +150,6 @@ model CommentLike {
   createdAt DateTime @default(now())
   
   // 관계
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
   
   @@unique([userId, commentId])
@@ -172,7 +164,6 @@ model CommentDislike {
   createdAt DateTime @default(now())
   
   // 관계
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
   
   @@unique([userId, commentId])

@@ -56,11 +56,14 @@ interface Comment {
   id: string
   content: string
   author: string
-  authorName: string
   createdAt: string
   likes: number
   dislikes: number
+  upvotes: number
+  downvotes: number
   replies: Comment[]
+  isLiked?: boolean
+  isDisliked?: boolean
 }
 
 export default function DiscussionDetailPage() {
@@ -74,6 +77,7 @@ export default function DiscussionDetailPage() {
   const [replyTo, setReplyTo] = useState<string | null>(null)
   const [replyContent, setReplyContent] = useState('')
   const [isLiked, setIsLiked] = useState(false)
+  const [isDisliked, setIsDisliked] = useState(false)
   const [isBookmarked, setIsBookmarked] = useState(false)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -85,6 +89,9 @@ export default function DiscussionDetailPage() {
   const [editContent, setEditContent] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [marketTrend, setMarketTrend] = useState<'up' | 'down' | null>(null)
+  const [commentNickname, setCommentNickname] = useState('')
+  const [commentPassword, setCommentPassword] = useState('')
+  const [commentSortBy, setCommentSortBy] = useState<'latest' | 'popular'>('latest')
 
   // 임시 사용자 ID (실제로는 인증 시스템에서 가져와야 함)
   // 현재는 익명 사용자로 처리
@@ -176,6 +183,25 @@ export default function DiscussionDetailPage() {
     return null
   }
 
+  // 댓글 정렬 함수
+  const sortComments = (commentsToSort: Comment[]) => {
+    const sortedComments = [...commentsToSort]
+    
+    if (commentSortBy === 'popular') {
+      // 공감순 정렬 (공감 수가 높은 순서)
+      sortedComments.sort((a, b) => {
+        const aScore = (a.upvotes || 0) - (a.downvotes || 0)
+        const bScore = (b.upvotes || 0) - (b.downvotes || 0)
+        return bScore - aScore
+      })
+    } else {
+      // 최신순 정렬 (생성일 기준)
+      sortedComments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    }
+    
+    return sortedComments
+  }
+
   const handleLike = async () => {
     try {
       const response = await fetch(`/api/posts/${postId}/like`, {
@@ -201,6 +227,35 @@ export default function DiscussionDetailPage() {
     }
   }
 
+
+
+  const handleDislike = async () => {
+    try {
+      const response = await fetch(`/api/posts/${postId}/dislike`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: currentUserId }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setIsDisliked(data.disliked)
+        
+        // 게시글 싫어요 수 업데이트
+        if (post) {
+          setPost({
+            ...post,
+            downvotes: data.disliked ? post.downvotes + 1 : post.downvotes - 1
+          })
+        }
+      }
+    } catch (error) {
+      console.error('Failed to dislike post:', error)
+    }
+  }
+
   const handleBookmark = async () => {
     try {
       const response = await fetch(`/api/posts/${postId}/bookmark`, {
@@ -220,9 +275,75 @@ export default function DiscussionDetailPage() {
     }
   }
 
+  const handleCommentLike = async (commentId: string) => {
+    try {
+      const response = await fetch(`/api/posts/${postId}/comments/${commentId}/like`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: currentUserId }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        
+        // 댓글 목록에서 해당 댓글 업데이트
+        setComments(prev => prev.map(comment => {
+          if (comment.id === commentId) {
+            return {
+              ...comment,
+              isLiked: data.liked,
+              upvotes: data.liked ? (comment.upvotes || 0) + 1 : Math.max(0, (comment.upvotes || 0) - 1)
+            }
+          }
+          return comment
+        }))
+      }
+    } catch (error) {
+      console.error('Failed to like comment:', error)
+    }
+  }
+
+  const handleCommentDislike = async (commentId: string) => {
+    try {
+      const response = await fetch(`/api/posts/${postId}/comments/${commentId}/dislike`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: currentUserId }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        
+        // 댓글 목록에서 해당 댓글 업데이트
+        setComments(prev => prev.map(comment => {
+          if (comment.id === commentId) {
+            return {
+              ...comment,
+              isDisliked: data.disliked,
+              downvotes: data.disliked ? (comment.downvotes || 0) + 1 : Math.max(0, (comment.downvotes || 0) - 1)
+            }
+          }
+          return comment
+        }))
+      }
+    } catch (error) {
+      console.error('Failed to dislike comment:', error)
+    }
+  }
+
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newComment.trim()) return
+    if (!newComment.trim() || !commentNickname.trim() || !commentPassword.trim()) return
+    
+    // 비밀번호가 4자리 숫자인지 확인
+    if (!/^\d{4}$/.test(commentPassword)) {
+      alert('비밀번호는 4자리 숫자로 입력해주세요.')
+      return
+    }
 
     setSubmitting(true)
     try {
@@ -233,7 +354,7 @@ export default function DiscussionDetailPage() {
         },
         body: JSON.stringify({
           content: newComment,
-          author: currentUserId,
+          author: commentNickname,
           parentId: replyTo
         }),
       })
@@ -243,11 +364,12 @@ export default function DiscussionDetailPage() {
         const newCommentObj: Comment = {
           id: data.comment.id,
           content: newComment,
-          author: currentUserId,
-          authorName: '나',
+          author: commentNickname,
           createdAt: new Date().toISOString(),
           likes: 0,
           dislikes: 0,
+          upvotes: 0,
+          downvotes: 0,
           replies: []
         }
 
@@ -265,6 +387,8 @@ export default function DiscussionDetailPage() {
         }
 
         setNewComment('')
+        setCommentNickname('')
+        setCommentPassword('')
         setReplyTo(null)
         setReplyContent('')
         
@@ -474,12 +598,19 @@ export default function DiscussionDetailPage() {
                 }`}
               >
                 <ThumbsUp className="w-4 h-4" />
-                <span>좋아요 {post.upvotes}</span>
+                <span>공감 {post.upvotes}</span>
               </button>
               
-              <button className="flex items-center space-x-2 px-4 py-2 bg-brand-surface text-brand-muted rounded-lg hover:bg-brand-accent hover:text-white transition-colors">
+              <button
+                onClick={handleDislike}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                  isDisliked
+                    ? 'bg-red-500 text-white'
+                    : 'bg-brand-surface text-brand-muted hover:bg-red-500 hover:text-white'
+                }`}
+              >
                 <ThumbsDown className="w-4 h-4" />
-                <span>싫어요 {post.downvotes}</span>
+                <span>비공감 {post.downvotes}</span>
               </button>
             </div>
             
@@ -511,6 +642,44 @@ export default function DiscussionDetailPage() {
           {/* 댓글 작성 폼 */}
           <div className="mb-6">
             <form onSubmit={handleCommentSubmit} className="space-y-4">
+              {/* 닉네임과 비밀번호 입력 (한 줄) */}
+              <div>
+                <label className="block text-sm font-medium text-brand-ink mb-2">
+                  작성자 정보 *
+                </label>
+                <div className="flex space-x-3">
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      value={commentNickname}
+                      onChange={(e) => setCommentNickname(e.target.value)}
+                      placeholder="닉네임"
+                      className="w-full p-3 border border-brand-border rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-transparent"
+                      required
+                      maxLength={20}
+                    />
+                  </div>
+                  <div className="w-32">
+                    <input
+                      type="password"
+                      value={commentPassword}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '').slice(0, 4)
+                        setCommentPassword(value)
+                      }}
+                      placeholder="비밀번호"
+                      className="w-full p-3 border border-brand-border rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-transparent text-center"
+                      required
+                      maxLength={4}
+                      pattern="[0-9]{4}"
+                      title="4자리 숫자를 입력하세요"
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-brand-muted mt-1">닉네임과 4자리 숫자 비밀번호를 입력하세요 (댓글 수정/삭제 시 필요)</p>
+              </div>
+              
+              {/* 댓글 내용 */}
               <textarea
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
@@ -518,11 +687,12 @@ export default function DiscussionDetailPage() {
                 className="w-full p-4 border border-brand-border rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-transparent resize-none"
                 rows={3}
                 disabled={submitting}
+                required
               />
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  disabled={!newComment.trim() || submitting}
+                  disabled={!newComment.trim() || !commentNickname.trim() || !commentPassword.trim() || submitting}
                   className="px-6 py-2 bg-brand-accent text-white rounded-lg hover:bg-brand-accent700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {submitting ? '작성 중...' : '댓글 작성'}
@@ -531,29 +701,67 @@ export default function DiscussionDetailPage() {
             </form>
           </div>
           
+          {/* 댓글 정렬 옵션 */}
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-brand-ink">댓글 ({comments.length})</h3>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-brand-muted">정렬:</span>
+              <button
+                onClick={() => setCommentSortBy('latest')}
+                className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                  commentSortBy === 'latest'
+                    ? 'bg-brand-accent text-white'
+                    : 'bg-brand-card text-brand-ink hover:bg-brand-surface'
+                }`}
+              >
+                최신순
+              </button>
+              <button
+                onClick={() => setCommentSortBy('popular')}
+                className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                  commentSortBy === 'popular'
+                    ? 'bg-brand-accent text-white'
+                    : 'bg-brand-card text-brand-ink hover:bg-brand-surface'
+                }`}
+              >
+                공감순
+              </button>
+            </div>
+          </div>
+          
           {/* 댓글 목록 */}
           <div className="space-y-6">
-            {comments.map((comment) => (
+            {sortComments(comments).map((comment) => (
               <div key={comment.id} className="border-b border-brand-border pb-6 last:border-b-0">
                 {/* 메인 댓글 */}
                 <div className="mb-4">
                   <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center space-x-2">
-                      <span className="font-medium text-brand-ink">{comment.authorName}</span>
-                      <span className="text-sm text-brand-muted">{getTimeAgo(comment.createdAt)}</span>
-                    </div>
+                                      <div className="flex items-center space-x-2">
+                    <span className="font-medium text-brand-ink">{comment.author}</span>
+                    <span className="text-sm text-brand-muted">{getTimeAgo(comment.createdAt)}</span>
+                  </div>
                   </div>
                   
                   <p className="text-brand-ink mb-3">{comment.content}</p>
                   
                   <div className="flex items-center space-x-4 text-sm">
-                    <button className="flex items-center space-x-1 text-brand-muted hover:text-brand-accent transition-colors">
+                    <button 
+                      onClick={() => handleCommentLike(comment.id)}
+                      className={`flex items-center space-x-1 transition-colors ${
+                        comment.isLiked ? 'text-brand-accent' : 'text-brand-muted hover:text-brand-accent'
+                      }`}
+                    >
                       <ThumbsUp className="w-4 h-4" />
-                      <span>{comment.likes}</span>
+                      <span>공감 {comment.upvotes || 0}</span>
                     </button>
-                    <button className="flex items-center space-x-1 text-brand-muted hover:text-brand-accent transition-colors">
+                    <button 
+                      onClick={() => handleCommentDislike(comment.id)}
+                      className={`flex items-center space-x-1 transition-colors ${
+                        comment.isDisliked ? 'text-brand-accent' : 'text-brand-muted hover:text-brand-accent'
+                      }`}
+                    >
                       <ThumbsDown className="w-4 h-4" />
-                      <span>{comment.dislikes}</span>
+                      <span>비공감 {comment.downvotes || 0}</span>
                     </button>
                     <button 
                       onClick={() => setReplyTo(replyTo === comment.id ? null : comment.id)}
@@ -605,18 +813,18 @@ export default function DiscussionDetailPage() {
                     {comment.replies.map((reply) => (
                       <div key={reply.id} className="bg-brand-surface rounded-lg p-4">
                         <div className="flex items-center space-x-2 mb-2">
-                          <span className="font-medium text-brand-ink">{reply.authorName}</span>
+                          <span className="font-medium text-brand-ink">{reply.author}</span>
                           <span className="text-sm text-brand-muted">{getTimeAgo(reply.createdAt)}</span>
                         </div>
                         <p className="text-brand-ink mb-2">{reply.content}</p>
                         <div className="flex items-center space-x-4 text-sm">
                           <button className="flex items-center space-x-1 text-brand-muted hover:text-brand-accent transition-colors">
                             <ThumbsUp className="w-4 h-4" />
-                            <span>{reply.likes}</span>
+                            <span>공감 {reply.upvotes || 0}</span>
                           </button>
                           <button className="flex items-center space-x-1 text-brand-muted hover:text-brand-accent transition-colors">
                             <ThumbsDown className="w-4 h-4" />
-                            <span>{reply.dislikes}</span>
+                            <span>비공감 {reply.downvotes || 0}</span>
                           </button>
                         </div>
                       </div>

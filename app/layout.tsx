@@ -25,7 +25,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
-      <body className={`${inter.className} bg-blue-100 min-h-screen`}>
+      <body className={inter.className}>
         <AuthProvider>
           {children}
         </AuthProvider>

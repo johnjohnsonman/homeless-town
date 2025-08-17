@@ -20,12 +20,10 @@ export async function POST(
     }
 
     // 기존 좋아요 확인
-    const existingLike = await prisma.like.findUnique({
+    const existingLike = await prisma.like.findFirst({
       where: {
-        userId_postId: {
-          userId,
-          postId
-        }
+        userId,
+        postId
       }
     })
 
@@ -33,10 +31,7 @@ export async function POST(
       // 좋아요 제거
       await prisma.like.delete({
         where: {
-          userId_postId: {
-            userId,
-            postId
-          }
+          id: existingLike.id
         }
       })
 
@@ -73,7 +68,8 @@ export async function POST(
       await prisma.like.create({
         data: {
           userId,
-          postId
+          postId,
+          user: undefined // 익명 사용자 지원
         }
       })
 
@@ -132,12 +128,10 @@ export async function GET(
       )
     }
 
-    const like = await prisma.like.findUnique({
+    const like = await prisma.like.findFirst({
       where: {
-        userId_postId: {
-          userId,
-          postId
-        }
+        userId,
+        postId
       }
     })
 

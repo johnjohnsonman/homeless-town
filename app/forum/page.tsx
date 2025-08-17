@@ -47,6 +47,19 @@ interface PopularPost {
   isNew: boolean
 }
 
+interface PopularDiscussion {
+  id: string
+  title: string
+  slug: string
+  upvotes: number
+  downvotes: number
+  commentCount: number
+  createdAt: string
+  nickname: string
+  tags: string[]
+  score: number
+}
+
 interface Tag {
   name: string
   count: number
@@ -56,6 +69,7 @@ interface Tag {
 export default function ForumPage() {
   const [posts, setPosts] = useState<Post[]>([])
   const [popularPosts, setPopularPosts] = useState<PopularPost[]>([])
+  const [popularDiscussions, setPopularDiscussions] = useState<PopularDiscussion[]>([])
   const [tags, setTags] = useState<Tag[]>([])
   const [sortBy, setSortBy] = useState('latest')
   const [selectedTag, setSelectedTag] = useState('all')
@@ -82,7 +96,20 @@ export default function ForumPage() {
       }
     }
 
+    const fetchPopularDiscussions = async () => {
+      try {
+        const response = await fetch('/api/popular-discussions')
+        const data = await response.json()
+        if (data.success && data.discussions) {
+          setPopularDiscussions(data.discussions)
+        }
+      } catch (error) {
+        console.error('Failed to fetch popular discussions:', error)
+      }
+    }
+
     fetchPosts()
+    fetchPopularDiscussions()
   }, [currentPage, selectedTag, searchQuery])
       
 
@@ -261,6 +288,19 @@ export default function ForumPage() {
                 >
                   전체
                 </button>
+                <button
+                  onClick={() => setSelectedTag('자유')}
+                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                    selectedTag === '자유'
+                      ? 'bg-brand-accent text-white'
+                      : 'text-brand-ink hover:bg-brand-accent/10'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span>자유</span>
+                    <span className="text-xs opacity-70">234</span>
+                  </div>
+                </button>
                 {defaultTags.map((tag) => (
                   <button
                     key={tag.name}
@@ -304,6 +344,8 @@ export default function ForumPage() {
                 ))}
               </div>
             </div>
+
+
           </div>
 
           {/* Main Content */}
@@ -338,37 +380,37 @@ export default function ForumPage() {
                       {/* Post Header */}
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-2 mb-1">
-                            <h3 className="text-sm font-semibold text-brand-ink truncate">
-                              <Link href={`/discussions/${post.id}`} className="hover:text-brand-accent transition-colors">
+                          <Link href={`/discussions/${post.id}`} className="block hover:bg-brand-accent/5 rounded-lg p-2 -m-2 transition-colors">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <h3 className="text-sm font-semibold text-brand-ink hover:text-brand-accent transition-colors">
                                 {post.title}
-                              </Link>
-                            </h3>
-                            {post.marketTrend && (
-                              <div className="flex items-center space-x-1">
-                                {getMarketTrendIcon(post.marketTrend)}
-                                <span className="text-xs text-brand-muted">
-                                  {getMarketTrendText(post.marketTrend)}
+                              </h3>
+                              {post.marketTrend && (
+                                <div className="flex items-center space-x-1">
+                                  {getMarketTrendIcon(post.marketTrend)}
+                                  <span className="text-xs text-brand-muted">
+                                    {getMarketTrendText(post.marketTrend)}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Tags */}
+                            <div className="flex items-center space-x-1 mb-2">
+                              {post.tags.slice(0, 3).map((tag) => (
+                                <span
+                                  key={tag}
+                                  className="px-2 py-1 bg-brand-accent/10 text-brand-accent text-xs rounded-full border border-brand-accent/20"
+                                >
+                                  {tag}
                                 </span>
-                              </div>
-                            )}
-        </div>
-
-                          {/* Tags */}
-                          <div className="flex items-center space-x-1 mb-2">
-                            {post.tags.slice(0, 2).map((tag) => (
-                              <span
-                                key={tag}
-                                className="px-2 py-1 bg-brand-accent/10 text-brand-accent text-xs rounded-full border border-brand-accent/20"
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                            {post.tags.length > 2 && (
-                              <span className="text-xs text-brand-muted">+{post.tags.length - 2}</span>
-                            )}
-                          </div>
-        </div>
+                              ))}
+                              {post.tags.length > 3 && (
+                                <span className="text-xs text-brand-muted">+{post.tags.length - 3}</span>
+                              )}
+                            </div>
+                          </Link>
+                        </div>
 
                         {/* Badges */}
                         <div className="flex items-center space-x-1 ml-2">
@@ -465,36 +507,49 @@ export default function ForumPage() {
             </div>
           </div>
 
-          {/* Right Sidebar - Popular Posts */}
+          {/* Right Sidebar - Popular Discussions */}
           <div className="lg:w-80 space-y-4">
             <div className="bg-brand-card rounded-2xl shadow-soft border border-brand-border p-4">
-              <h3 className="font-semibold text-brand-ink mb-3">인기 토론글</h3>
+              <h3 className="font-semibold text-brand-ink mb-3 flex items-center">
+                <Flame className="w-4 h-4 mr-2 text-orange-500" />
+                인기토론글
+              </h3>
               <div className="space-y-3">
-                {popularPosts.map((post) => (
-                  <div key={post.id} className="border-b border-brand-border pb-3 last:border-b-0">
-                    <h4 className="text-sm font-medium text-brand-ink mb-1 line-clamp-2">
-                      <Link href={`/discussions/${post.id}`} className="hover:text-brand-accent transition-colors">
-                        {post.title}
-                      </Link>
-                    </h4>
-                    <div className="flex items-center justify-between text-xs text-brand-muted">
-                      <div className="flex items-center space-x-2">
-                        <span className="flex items-center">
-                          <Eye className="w-3 h-3 mr-1" />
-                          {post.views}
+                {popularDiscussions.length > 0 ? (
+                  popularDiscussions.map((discussion, index) => (
+                    <div key={discussion.id} className="border-b border-brand-border pb-3 last:border-b-0">
+                      <div className="flex items-start space-x-2 mb-2">
+                        <span className="text-xs font-bold text-brand-accent bg-brand-accent/10 px-1.5 py-0.5 rounded flex-shrink-0">
+                          {index + 1}
                         </span>
-                        <span className="flex items-center">
-                          <MessageSquare className="w-3 h-3 mr-1" />
-                          {post.comments}
-                        </span>
+                        <h4 className="text-sm font-medium text-brand-ink line-clamp-2 leading-tight">
+                          <Link href={`/discussions/${discussion.id}`} className="hover:text-brand-accent transition-colors">
+                            {discussion.title}
+                          </Link>
+                        </h4>
                       </div>
-                      <div className="flex items-center space-x-1">
-                        {post.isHot && <Flame className="w-3 h-3 text-red-500" />}
-                        {post.isNew && <Zap className="w-3 h-3 text-yellow-500" />}
+                      <div className="flex items-center justify-between text-xs text-brand-muted">
+                        <div className="flex items-center space-x-2">
+                          <span className="flex items-center">
+                            <ThumbsUp className="w-3 h-3 mr-1" />
+                            {discussion.upvotes}
+                          </span>
+                          <span className="flex items-center">
+                            <MessageSquare className="w-3 h-3 mr-1" />
+                            {discussion.commentCount}
+                          </span>
+                        </div>
+                        <span className="text-xs opacity-70">
+                          {discussion.nickname || '익명'}
+                        </span>
                       </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="text-xs text-brand-muted text-center py-4">
+                    인기토론글이 없습니다
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>
