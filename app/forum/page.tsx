@@ -98,10 +98,16 @@ export default function ForumPage() {
 
     const fetchPopularDiscussions = async () => {
       try {
-        const response = await fetch('/api/popular-discussions')
+        const response = await fetch('/api/popular-discussions', {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        })
         const data = await response.json()
         if (data.success && data.discussions) {
           setPopularDiscussions(data.discussions)
+          console.log('인기토론글 업데이트됨:', data.discussions)
         }
       } catch (error) {
         console.error('Failed to fetch popular discussions:', error)
@@ -110,8 +116,46 @@ export default function ForumPage() {
 
     fetchPosts()
     fetchPopularDiscussions()
+    
+    // 인기토론글을 30초마다 새로고침 (Render에서 동적 업데이트를 위해)
+    const interval = setInterval(fetchPopularDiscussions, 30000)
+    
+    return () => clearInterval(interval)
   }, [currentPage, selectedTag, searchQuery])
       
+
+  // 인기토론글 새로고침 함수
+  const refreshPopularDiscussions = async () => {
+    try {
+      const response = await fetch('/api/popular-discussions', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      })
+      const data = await response.json()
+      if (data.success && data.discussions) {
+        setPopularDiscussions(data.discussions)
+        console.log('인기토론글 즉시 새로고침됨:', data.discussions)
+      }
+    } catch (error) {
+      console.error('Failed to refresh popular discussions:', error)
+    }
+  }
+
+  // 좋아요/싫어요 후 인기토론글 업데이트를 위한 이벤트 리스너
+  useEffect(() => {
+    const handleVoteUpdate = () => {
+      refreshPopularDiscussions()
+    }
+
+    // 커스텀 이벤트 리스너 추가
+    window.addEventListener('vote-updated', handleVoteUpdate)
+    
+    return () => {
+      window.removeEventListener('vote-updated', handleVoteUpdate)
+    }
+  }, [])
 
   const samplePopularPosts: PopularPost[] = [
     {
@@ -200,7 +244,7 @@ export default function ForumPage() {
           setPosts([])
           setPopularPosts(samplePopularPosts)
         }
-          } catch (error) {
+  } catch (error) {
           console.error('Failed to fetch data:', error)
           // 에러 시 기본 인기글 데이터 사용
           setPosts([])
@@ -393,8 +437,8 @@ export default function ForumPage() {
                                   </span>
                                 </div>
                               )}
-                            </div>
-                            
+        </div>
+
                             {/* Tags */}
                             <div className="flex items-center space-x-1 mb-2">
                               {post.tags.slice(0, 3).map((tag) => (
@@ -449,7 +493,7 @@ export default function ForumPage() {
                   </div>
                 ))
               )}
-            </div>
+        </div>
 
             {/* Pagination */}
             {totalPages > 1 && (

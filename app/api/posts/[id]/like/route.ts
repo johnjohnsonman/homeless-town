@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 // POST: 좋아요 추가/제거 (토글)
 export async function POST(
@@ -62,7 +60,14 @@ export async function POST(
         })
       }
 
-      return NextResponse.json({ liked: false })
+      const response = NextResponse.json({ liked: false })
+      
+      // Render에서 동적 데이터 업데이트를 위해 캐시 방지
+      response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
+      response.headers.set('Pragma', 'no-cache')
+      response.headers.set('Expires', '0')
+      
+      return response
     } else {
       // 좋아요 추가 (익명 사용자 지원)
       await prisma.like.create({
@@ -100,7 +105,14 @@ export async function POST(
         })
       }
 
-      return NextResponse.json({ liked: true })
+      const response = NextResponse.json({ liked: true })
+      
+      // Render에서 동적 데이터 업데이트를 위해 캐시 방지
+      response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
+      response.headers.set('Pragma', 'no-cache')
+      response.headers.set('Expires', '0')
+      
+      return response
     }
   } catch (error) {
     console.error('좋아요 처리 실패:', error)
