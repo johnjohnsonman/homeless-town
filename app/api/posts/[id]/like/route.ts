@@ -60,7 +60,24 @@ export async function POST(
         })
       }
 
-      const response = NextResponse.json({ liked: false })
+      // 업데이트된 게시글 정보 조회
+      const updatedPost = await prisma.post.findUnique({
+        where: { id: postId },
+        select: {
+          id: true,
+          title: true,
+          upvotes: true,
+          downvotes: true,
+          commentCount: true,
+          createdAt: true
+        }
+      })
+
+      const response = NextResponse.json({ 
+        liked: false,
+        updatedPost,
+        message: '좋아요가 제거되었습니다.'
+      })
       
       // Render에서 동적 데이터 업데이트를 위해 캐시 방지
       response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
@@ -105,7 +122,24 @@ export async function POST(
         })
       }
 
-      const response = NextResponse.json({ liked: true })
+      // 업데이트된 게시글 정보 조회
+      const updatedPost = await prisma.post.findUnique({
+        where: { id: postId },
+        select: {
+          id: true,
+          title: true,
+          upvotes: true,
+          downvotes: true,
+          commentCount: true,
+          createdAt: true
+        }
+      })
+
+      const response = NextResponse.json({ 
+        liked: true,
+        updatedPost,
+        message: '좋아요가 추가되었습니다.'
+      })
       
       // Render에서 동적 데이터 업데이트를 위해 캐시 방지
       response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')

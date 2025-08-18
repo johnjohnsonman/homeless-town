@@ -143,17 +143,33 @@ export default function ForumPage() {
     }
   }
 
+  // 게시글 공감 처리 후 인기토론글 업데이트
+  const handleVoteUpdate = async (postId: string, newUpvotes: number, newDownvotes: number) => {
+    // 게시글 목록의 공감 숫자 업데이트
+    setPosts(prevPosts => 
+      prevPosts.map(post => 
+        post.id === postId 
+          ? { ...post, upvotes: newUpvotes, downvotes: newDownvotes }
+          : post
+      )
+    )
+    
+    // 인기토론글 즉시 새로고침
+    await refreshPopularDiscussions()
+  }
+
   // 좋아요/싫어요 후 인기토론글 업데이트를 위한 이벤트 리스너
   useEffect(() => {
-    const handleVoteUpdate = () => {
-      refreshPopularDiscussions()
+    const handleVoteEvent = (event: CustomEvent) => {
+      const { postId, upvotes, downvotes } = event.detail
+      handleVoteUpdate(postId, upvotes, downvotes)
     }
 
     // 커스텀 이벤트 리스너 추가
-    window.addEventListener('vote-updated', handleVoteUpdate)
+    window.addEventListener('vote-updated', handleVoteEvent as EventListener)
     
     return () => {
-      window.removeEventListener('vote-updated', handleVoteUpdate)
+      window.removeEventListener('vote-updated', handleVoteEvent as EventListener)
     }
   }, [])
 
