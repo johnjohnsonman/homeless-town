@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, TrendingUp, TrendingDown, Home, FileText, AlertTriangle, Users, Shield, Calculator, Scale } from 'lucide-react'
+import { ArrowLeft, TrendingUp, TrendingDown, Home, FileText, AlertTriangle, Users, Shield, Calculator, Scale, Flame, ThumbsUp, MessageSquare } from 'lucide-react'
+import Link from 'next/link'
 
 export default function NewDiscussionPage() {
   const [title, setTitle] = useState('')
@@ -13,7 +14,34 @@ export default function NewDiscussionPage() {
   const [marketTrend, setMarketTrend] = useState<'up' | 'down' | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [popularDiscussions, setPopularDiscussions] = useState<any[]>([])
+  const [recentDiscussions, setRecentDiscussions] = useState<any[]>([])
   const router = useRouter()
+
+  // 인기토론글과 최근 토론글 가져오기
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // 인기토론글 가져오기
+        const popularResponse = await fetch('/api/popular-discussions')
+        if (popularResponse.ok) {
+          const popularData = await popularResponse.json()
+          setPopularDiscussions(popularData.discussions || [])
+        }
+
+        // 최근 토론글 가져오기
+        const recentResponse = await fetch('/api/discussions')
+        if (recentResponse.ok) {
+          const recentData = await recentResponse.json()
+          setRecentDiscussions(recentData.discussions || [])
+        }
+      } catch (error) {
+        console.error('데이터 가져오기 실패:', error)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   // 세입자들에게 필요한 실용적인 태그들
   const availableTags = [
@@ -109,7 +137,7 @@ export default function NewDiscussionPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <button
@@ -124,8 +152,12 @@ export default function NewDiscussionPage() {
           <p className="text-sm sm:text-base text-gray-600 mt-2">무주택촌 커뮤니티에 새로운 토론을 시작하세요</p>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        {/* 2단 레이아웃: 메인 폼 + 오른쪽 사이드바 */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* 메인 폼 (2/3) */}
+          <div className="lg:col-span-2">
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           {/* Form Header */}
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
             <h2 className="text-white font-semibold text-lg">토론글 정보 입력</h2>
@@ -315,14 +347,124 @@ export default function NewDiscussionPage() {
           </div>
         </form>
 
-        {/* Cancel Button - Form 아래에 배치 */}
-        <div className="mt-6 text-center">
-          <button
-            onClick={() => router.back()}
-            className="px-6 py-2 text-gray-600 hover:text-gray-800 transition-colors text-sm"
-          >
-            작성 취소하고 토론방으로 돌아가기
-          </button>
+            {/* Cancel Button - Form 아래에 배치 */}
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => router.back()}
+                className="px-6 py-2 text-gray-600 hover:text-gray-800 transition-colors text-sm"
+              >
+                작성 취소하고 토론방으로 돌아가기
+              </button>
+            </div>
+          </div>
+
+          {/* 오른쪽 사이드바 (1/3) */}
+          <div className="lg:col-span-1">
+            {/* 인기토론글 */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+              <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
+                <Flame className="w-4 h-4 mr-2 text-orange-500" />
+                🔥 인기토론글
+              </h3>
+              <div className="space-y-3">
+                {popularDiscussions.length > 0 ? (
+                  popularDiscussions.map((discussion, index) => (
+                    <div key={discussion.id} className="border-b border-gray-100 pb-3 last:border-b-0">
+                      <div className="flex items-start space-x-2 mb-2">
+                        <span className="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded flex-shrink-0">
+                          {index + 1}
+                        </span>
+                        <h4 className="text-sm font-medium text-gray-900 line-clamp-2 leading-tight">
+                          <Link href={`/discussions/${discussion.id}`} className="hover:text-blue-600 transition-colors">
+                            {discussion.title}
+                          </Link>
+                        </h4>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <div className="flex items-center space-x-2">
+                          <span className="flex items-center">
+                            <ThumbsUp className="w-3 h-3 mr-1" />
+                            {discussion.upvotes || 0}
+                          </span>
+                          <span className="flex items-center">
+                            <MessageSquare className="w-3 h-3 mr-1" />
+                            {discussion.commentCount || 0}
+                          </span>
+                        </div>
+                        <span className="text-xs opacity-70">
+                          {discussion.nickname || '익명'}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-xs text-gray-500 text-center py-4">
+                    인기토론글이 없습니다
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 작성 팁 */}
+            <div className="bg-blue-50 rounded-xl border border-blue-200 p-6">
+              <h3 className="font-semibold text-blue-900 mb-3">✍️ 작성 팁</h3>
+              <ul className="text-sm text-blue-800 space-y-2">
+                <li>• 구체적이고 명확한 제목을 작성하세요</li>
+                <li>• 경험담이나 실제 사례를 포함하면 좋습니다</li>
+                <li>• 관련 태그를 적절히 선택하세요</li>
+                <li>• 다른 분들의 의견을 듣고 싶은 질문을 해보세요</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* 하단 섹션: 기존 글들 미리보기 */}
+        <div className="mt-12">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">📝 최근 토론글들</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {recentDiscussions.slice(0, 6).map((discussion) => (
+                <div key={discussion.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">
+                    <Link href={`/discussions/${discussion.id}`} className="hover:text-blue-600 transition-colors">
+                      {discussion.title}
+                    </Link>
+                  </h3>
+                  <div className="flex items-center justify-between text-sm text-gray-500 mb-2">
+                    <span>{discussion.nickname || '익명'}</span>
+                    <span className="text-xs">{new Date(discussion.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-xs text-gray-500">
+                    <span className="flex items-center">
+                      <ThumbsUp className="w-3 h-3 mr-1" />
+                      {discussion.upvotes || 0}
+                    </span>
+                    <span className="flex items-center">
+                      <MessageSquare className="w-3 h-3 mr-1" />
+                      {discussion.commentCount || 0}
+                    </span>
+                  </div>
+                  {discussion.tags && discussion.tags.length > 0 && (
+                    <div className="flex items-center space-x-1 mt-2">
+                      {discussion.tags.slice(0, 2).map((tag: string) => (
+                        <span key={tag} className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="text-center mt-6">
+              <Link
+                href="/forum"
+                className="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+              >
+                더 많은 토론글 보기 →
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </div>
