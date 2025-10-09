@@ -5,10 +5,15 @@ import slugify from 'slugify'
 
 const prisma = new PrismaClient()
 
-// OpenAI 클라이언트 초기화
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+// OpenAI 클라이언트 초기화 함수
+function getOpenAIClient() {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY is not set')
+  }
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  })
+}
 
 // 게시글 주제별 템플릿
 const postTemplates = [
@@ -71,6 +76,8 @@ const postTemplates = [
 
 async function generatePostContent(topic: string, category: string): Promise<{ title: string; content: string }> {
   try {
+    const openai = getOpenAIClient()
+    
     const prompt = `
 다음 주제로 무주택촌 커뮤니티 토론글을 작성해주세요:
 
