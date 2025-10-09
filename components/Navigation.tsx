@@ -58,26 +58,26 @@ const Navigation = () => {
           </div>
 
           {/* Right: Auth Buttons */}
-          <div className="flex items-center justify-end flex-1 space-x-3">
+          <div className="hidden md:flex items-center justify-end space-x-2">
             {isAuthenticated ? (
               <>
                 <Link
                   href="/mypage"
-                  className="flex items-center space-x-2 bg-brand-surface text-brand-ink px-4 py-2 rounded-lg hover:bg-brand-card transition-colors duration-200 border border-brand-border"
+                  className="flex items-center space-x-1 bg-brand-surface text-brand-ink px-3 py-1.5 rounded-lg hover:bg-brand-card transition-colors duration-200 border border-brand-border text-sm whitespace-nowrap"
                 >
                   <User className="w-4 h-4" />
                   <span className="font-medium">마이페이지</span>
                 </Link>
                 <Link
                   href="/admin"
-                  className="flex items-center space-x-2 bg-brand-surface text-brand-ink px-4 py-2 rounded-lg hover:bg-brand-card transition-colors duration-200 border border-brand-border"
+                  className="flex items-center space-x-1 bg-brand-surface text-brand-ink px-3 py-1.5 rounded-lg hover:bg-brand-card transition-colors duration-200 border border-brand-border text-sm whitespace-nowrap"
                 >
                   <User className="w-4 h-4" />
                   <span className="font-medium">관리자</span>
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="flex items-center space-x-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200"
+                  className="flex items-center space-x-1 bg-red-500 text-white px-3 py-1.5 rounded-lg hover:bg-red-600 transition-colors duration-200 text-sm whitespace-nowrap"
                 >
                   <LogOut className="w-4 h-4" />
                   <span className="font-medium">로그아웃</span>
@@ -86,7 +86,7 @@ const Navigation = () => {
             ) : (
               <Link
                 href="/login"
-                className="flex items-center space-x-2 bg-brand-accent text-white px-4 py-2 rounded-lg hover:bg-brand-accent700 transition-colors duration-200"
+                className="flex items-center space-x-1 bg-brand-accent text-white px-3 py-1.5 rounded-lg hover:bg-brand-accent700 transition-colors duration-200 text-sm whitespace-nowrap"
               >
                 <LogIn className="w-4 h-4" />
                 <span className="font-medium">로그인</span>
