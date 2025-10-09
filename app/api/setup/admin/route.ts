@@ -43,8 +43,25 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('관리자 생성 오류:', error)
+    
+    // 더 자세한 오류 정보 제공
+    let errorMessage = '관리자 계정 생성 중 오류가 발생했습니다.'
+    
+    if (error instanceof Error) {
+      if (error.message.includes('connect')) {
+        errorMessage = '데이터베이스 연결 오류입니다. DATABASE_URL을 확인해주세요.'
+      } else if (error.message.includes('relation') || error.message.includes('table')) {
+        errorMessage = '데이터베이스 테이블이 없습니다. 마이그레이션을 실행해주세요.'
+      } else {
+        errorMessage = `오류: ${error.message}`
+      }
+    }
+    
     return NextResponse.json(
-      { error: '관리자 계정 생성 중 오류가 발생했습니다.' },
+      { 
+        error: errorMessage,
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   } finally {

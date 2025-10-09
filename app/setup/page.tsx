@@ -5,6 +5,7 @@ import { ShieldCheck, CheckCircle, XCircle, Loader } from 'lucide-react'
 
 export default function SetupPage() {
   const [loading, setLoading] = useState(false)
+  const [migrateLoading, setMigrateLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [success, setSuccess] = useState(false)
   const [hasAdmin, setHasAdmin] = useState<boolean | null>(null)
@@ -47,6 +48,33 @@ export default function SetupPage() {
       console.error('생성 오류:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const runMigration = async () => {
+    setMigrateLoading(true)
+    setMessage('')
+    
+    try {
+      const response = await fetch('/api/setup/migrate', {
+        method: 'POST'
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok) {
+        setSuccess(true)
+        setMessage('✅ 데이터베이스 마이그레이션이 완료되었습니다!\n\n이제 관리자 계정을 생성할 수 있습니다.')
+      } else {
+        setSuccess(false)
+        setMessage(`❌ ${data.error}\n\n상세: ${data.details}`)
+      }
+    } catch (error) {
+      setSuccess(false)
+      setMessage('❌ 마이그레이션 실행 중 오류가 발생했습니다.')
+      console.error('마이그레이션 오류:', error)
+    } finally {
+      setMigrateLoading(false)
     }
   }
 
@@ -97,6 +125,22 @@ export default function SetupPage() {
             </div>
           </div>
         )}
+
+        {/* 마이그레이션 버튼 */}
+        <button
+          onClick={runMigration}
+          disabled={migrateLoading}
+          className="w-full py-3 px-4 rounded-lg font-medium transition-colors bg-yellow-600 text-white hover:bg-yellow-700 active:bg-yellow-800 disabled:opacity-50 flex items-center justify-center space-x-2 mb-4"
+        >
+          {migrateLoading ? (
+            <>
+              <Loader className="w-5 h-5 animate-spin" />
+              <span>마이그레이션 중...</span>
+            </>
+          ) : (
+            <span>🔧 데이터베이스 마이그레이션 실행</span>
+          )}
+        </button>
 
         {/* 생성 버튼 */}
         <button
