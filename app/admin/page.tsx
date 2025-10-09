@@ -20,7 +20,10 @@ import {
   Filter,
   LogOut,
   X,
-  BookOpen
+  BookOpen,
+  Bot,
+  Play,
+  Settings
 } from 'lucide-react'
 
 export default function AdminDashboard() {
@@ -31,6 +34,14 @@ export default function AdminDashboard() {
   const [guides, setGuides] = useState([])
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
+  
+  // AI 관련 상태
+  const [aiGenerating, setAiGenerating] = useState(false)
+  const [aiSettings, setAiSettings] = useState({
+    dailyCount: 20,
+    enabled: true,
+    categories: ['시황', '자유', '분쟁사례', '정책', '안전수칙']
+  })
   const [showCreateUserModal, setShowCreateUserModal] = useState(false)
   const [showCreateGuideModal, setShowCreateGuideModal] = useState(false)
   const [createUserForm, setCreateUserForm] = useState({
@@ -236,6 +247,52 @@ export default function AdminDashboard() {
     }
   }
 
+  // AI 게시글 생성 함수들
+  const handleGenerateAIPosts = async (count = 20) => {
+    setAiGenerating(true)
+    try {
+      const response = await fetch('/api/ai/generate-posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ count })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        alert(`성공적으로 ${count}개의 AI 게시글이 생성되었습니다!`)
+        // 게시글 목록 새로고침
+        fetchPosts()
+      } else {
+        alert(data.error || 'AI 게시글 생성에 실패했습니다.')
+      }
+    } catch (error) {
+      console.error('AI 게시글 생성 오류:', error)
+      alert('AI 게시글 생성 중 오류가 발생했습니다.')
+    } finally {
+      setAiGenerating(false)
+    }
+  }
+
+  const handleTestAIPost = async () => {
+    try {
+      const response = await fetch('/api/ai/generate-posts?count=1')
+      const data = await response.json()
+
+      if (response.ok) {
+        alert('테스트 AI 게시글이 생성되었습니다!')
+        fetchPosts()
+      } else {
+        alert(data.error || '테스트 게시글 생성에 실패했습니다.')
+      }
+    } catch (error) {
+      console.error('테스트 게시글 생성 오류:', error)
+      alert('테스트 게시글 생성 중 오류가 발생했습니다.')
+    }
+  }
+
   const handleCreateGuide = async (e) => {
     e.preventDefault()
     setCreateGuideLoading(true)
@@ -333,6 +390,7 @@ export default function AdminDashboard() {
               { id: 'posts', label: '게시글', icon: Home },
               { id: 'discussions', label: '토론', icon: MessageCircle },
               { id: 'guides', label: '계약가이드', icon: BookOpen },
+              { id: 'ai', label: 'AI 관리', icon: Bot },
               { id: 'settings', label: '설정', icon: AlertCircle },
               { id: 'resources', label: '자료실', icon: Download }
             ].map((tab) => {
@@ -736,6 +794,182 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* AI Management Tab */}
+        {activeTab === 'ai' && (
+          <div className="space-y-6">
+            {/* AI 상태 카드 */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div className="flex items-center">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <Bot className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">AI 상태</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {process.env.OPENAI_API_KEY ? '활성' : '비활성'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div className="flex items-center">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <MessageCircle className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">일일 생성량</p>
+                    <p className="text-2xl font-bold text-gray-900">{aiSettings.dailyCount}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div className="flex items-center">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Settings className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">활성 카테고리</p>
+                    <p className="text-2xl font-bold text-gray-900">{aiSettings.categories.length}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* AI 게시글 생성 */}
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">AI 게시글 생성</h3>
+              
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <button
+                    onClick={() => handleTestAIPost()}
+                    className="flex items-center justify-center space-x-2 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <Bot className="w-5 h-5" />
+                    <span>테스트 게시글 생성 (1개)</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => handleGenerateAIPosts(5)}
+                    className="flex items-center justify-center space-x-2 bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    <Play className="w-5 h-5" />
+                    <span>소량 생성 (5개)</span>
+                  </button>
+                </div>
+                
+                <button
+                  onClick={() => handleGenerateAIPosts(20)}
+                  disabled={aiGenerating}
+                  className="w-full flex items-center justify-center space-x-2 bg-purple-600 text-white px-4 py-3 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
+                >
+                  {aiGenerating ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <span>생성 중...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Bot className="w-5 h-5" />
+                      <span>일일 게시글 생성 (20개)</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* AI 설정 */}
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">AI 설정</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    일일 생성 게시글 수
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={aiSettings.dailyCount}
+                    onChange={(e) => setAiSettings({...aiSettings, dailyCount: parseInt(e.target.value)})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    활성 카테고리
+                  </label>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    {['시황', '자유', '분쟁사례', '정책', '안전수칙'].map(category => (
+                      <label key={category} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={aiSettings.categories.includes(category)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setAiSettings({
+                                ...aiSettings,
+                                categories: [...aiSettings.categories, category]
+                              })
+                            } else {
+                              setAiSettings({
+                                ...aiSettings,
+                                categories: aiSettings.categories.filter(c => c !== category)
+                              })
+                            }
+                          }}
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                        <span className="text-sm text-gray-700">{category}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="aiEnabled"
+                    checked={aiSettings.enabled}
+                    onChange={(e) => setAiSettings({...aiSettings, enabled: e.target.checked})}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="aiEnabled" className="text-sm text-gray-700">
+                    AI 자동 생성 활성화
+                  </label>
+                </div>
+
+                <button
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  설정 저장
+                </button>
+              </div>
+            </div>
+
+            {/* 자동 스케줄링 정보 */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+              <h4 className="text-lg font-semibold text-yellow-800 mb-2">자동 스케줄링 설정</h4>
+              <p className="text-yellow-700 mb-4">
+                하루 20개의 AI 게시글을 자동으로 생성하려면 Render의 Cron Jobs를 설정해야 합니다.
+              </p>
+              <div className="bg-gray-100 p-4 rounded-lg">
+                <p className="text-sm text-gray-700 font-mono">
+                  URL: {process.env.NEXT_PUBLIC_APP_URL}/api/cron/daily-posts<br/>
+                  Schedule: 0 9 * * * (매일 오전 9시)<br/>
+                  Method: POST<br/>
+                  Headers: Authorization: Bearer YOUR_CRON_SECRET
+                </p>
+              </div>
             </div>
           </div>
         )}

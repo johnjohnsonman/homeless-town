@@ -82,6 +82,8 @@ cp .env.example .env
 
 # .env 파일 수정 (필요에 따라)
 # DATABASE_URL="file:./prisma/dev.db"  # 개발용 SQLite
+# OPENAI_API_KEY="your-openai-api-key"  # AI 게시글 생성용
+# CRON_SECRET="your-secure-secret"  # 자동 스케줄링용
 ```
 
 4. **데이터베이스 설정**
