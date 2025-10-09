@@ -62,6 +62,13 @@ const Navigation = () => {
             {isAuthenticated ? (
               <>
                 <Link
+                  href="/mypage"
+                  className="flex items-center space-x-2 bg-brand-surface text-brand-ink px-4 py-2 rounded-lg hover:bg-brand-card transition-colors duration-200 border border-brand-border"
+                >
+                  <User className="w-4 h-4" />
+                  <span className="font-medium">마이페이지</span>
+                </Link>
+                <Link
                   href="/admin"
                   className="flex items-center space-x-2 bg-brand-surface text-brand-ink px-4 py-2 rounded-lg hover:bg-brand-card transition-colors duration-200 border border-brand-border"
                 >

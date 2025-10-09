@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Admin {
@@ -45,8 +45,11 @@ model User {
   totalComments Int @default(0)
   
   // 관계
-  posts     Post[]
-  bookmarks Bookmark[]
+  posts         Post[]
+  bookmarks     Bookmark[]
+  profile       UserProfile?
+  notifications UserNotification[]
+  uploads       FileUpload[]
   
   @@index([username])
   @@index([email])
@@ -82,6 +85,7 @@ model Post {
   dislikes    Dislike[]
   bookmarks   Bookmark[]
   authorUser  User?      @relation(fields: [author], references: [id])
+  files       FileUpload[]
 
   @@index([createdAt])
   @@index([upvotes])
@@ -210,4 +214,133 @@ model PostTag {
   @@unique([postId, tagId])
   @@index([postId])
   @@index([tagId])
+}
+
+model ContractGuide {
+  id          String   @id @default(cuid())
+  title       String
+  category    String   // 'basics', 'documents', 'deposit', 'rights', 'disputes'
+  difficulty  String   // '초급', '중급', '고급'
+  readTime    String   // '3분', '5분', '8분' 등
+  summary     String
+  content     String
+  downloads   Int      @default(0)
+  rating      Float    @default(0)
+  isNew       Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 관계
+  tags        ContractGuideTag[]
+  
+  @@index([category])
+  @@index([createdAt])
+  @@index([isNew])
+}
+
+model ContractGuideTag {
+  id        String @id @default(cuid())
+  guideId   String
+  name      String
+  
+  // 관계
+  guide     ContractGuide @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  
+  @@unique([guideId, name])
+  @@index([guideId])
+  @@index([name])
+}
+
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  category    String   @default("general") // 'general', 'email', 'security', 'ui'
+  isPublic    Boolean  @default(false) // 공개 설정인지 여부
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([category])
+  @@index([isPublic])
+}
+
+model Announcement {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  type        String   @default("info") // 'info', 'warning', 'success', 'error'
+  priority    String   @default("normal") // 'low', 'normal', 'high', 'urgent'
+  isActive    Boolean  @default(true)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([isActive])
+  @@index([priority])
+  @@index([startDate])
+  @@index([endDate])
+}
+
+model UserProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  bio         String?
+  avatar      String?  // 프로필 이미지 URL
+  location    String?  // 거주 지역
+  phone       String?  // 연락처
+  website     String?  // 개인 웹사이트
+  socialLinks String?  // 소셜 미디어 링크들 (JSON 문자열)
+  preferences String?  // 사용자 설정 (JSON 문자열)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 관계
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
+
+model UserNotification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // 'comment', 'like', 'mention', 'system'
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  data      String?  // 추가 데이터 (JSON 문자열)
+  createdAt DateTime @default(now())
+  
+  // 관계
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+model FileUpload {
+  id          String   @id @default(cuid())
+  filename    String
+  originalName String
+  mimeType    String
+  size        Int      // 파일 크기 (바이트)
+  path        String   // 서버 내 파일 경로
+  url         String   // 접근 가능한 URL
+  userId      String?  // 업로드한 사용자 (선택사항)
+  postId      String?  // 연결된 게시글 (선택사항)
+  type        String   @default("image") // 'image', 'document', 'video', 'audio'
+  isPublic    Boolean  @default(true)   // 공개 여부
+  createdAt   DateTime @default(now())
+  
+  // 관계
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  post        Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([postId])
+  @@index([type])
+  @@index([isPublic])
+  @@index([createdAt])
 }
