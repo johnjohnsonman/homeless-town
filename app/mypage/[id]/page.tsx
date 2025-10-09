@@ -100,10 +100,10 @@ export default function MyPage() {
     }
   })
 
-  const userId = params.userId as string || currentUser?.id
+  const userId = params.id as string || currentUser?.id
 
   useEffect(() => {
-    if (!isAuthenticated && !params.userId) {
+    if (!isAuthenticated && !params.id) {
       router.push('/login')
       return
     }
@@ -616,3 +616,4 @@ export default function MyPage() {
     </div>
   )
 }
+
