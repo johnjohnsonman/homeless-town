@@ -131,11 +131,11 @@ export default function ForumPage() {
     fetchPopularDiscussions()
     fetchTagCounts()
     
-    // 인기토론글을 30초마다 새로고침 (Render에서 동적 업데이트를 위해)
+    // 인기토론글과 태그 카운트를 15초마다 새로고침 (더 빠른 업데이트를 위해)
     const interval = setInterval(() => {
       fetchPopularDiscussions()
       fetchTagCounts()
-    }, 30000)
+    }, 15000)
     
     return () => clearInterval(interval)
   }, [currentPage, selectedTag, searchQuery])
@@ -160,7 +160,26 @@ export default function ForumPage() {
     }
   }
 
-  // 게시글 공감 처리 후 인기토론글 업데이트
+  // 태그 카운트 새로고침 함수
+  const refreshTagCounts = async () => {
+    try {
+      const response = await fetch('/api/tags/counts', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      })
+      const data = await response.json()
+      if (data.success && data.tags) {
+        setTags(data.tags)
+        console.log('태그 카운트 즉시 새로고침됨:', data.tags)
+      }
+    } catch (error) {
+      console.error('Failed to refresh tag counts:', error)
+    }
+  }
+
+  // 게시글 공감 처리 후 인기토론글 및 태그 카운트 업데이트
   const handleVoteUpdate = async (postId: string, newUpvotes: number, newDownvotes: number) => {
     // 게시글 목록의 공감 숫자 업데이트
     setPosts(prevPosts => 
@@ -171,8 +190,11 @@ export default function ForumPage() {
       )
     )
     
-    // 인기토론글 즉시 새로고침
-    await refreshPopularDiscussions()
+    // 인기토론글 및 태그 카운트 즉시 새로고침
+    await Promise.all([
+      refreshPopularDiscussions(),
+      refreshTagCounts()
+    ])
   }
 
   // 좋아요/싫어요 후 인기토론글 업데이트를 위한 이벤트 리스너
