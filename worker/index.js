@@ -8,6 +8,7 @@ const IORedis = require('ioredis');
 // Redis 연결 (선택적)
 let connection = null;
 let postQueue = null;
+const queueName = 'postQueue';
 
 try {
   connection = new IORedis(process.env.REDIS_URL, {
@@ -17,7 +18,6 @@ try {
   });
 
   // 큐 생성
-  const queueName = 'postQueue';
   postQueue = new Queue(queueName, { connection });
   console.log('✅ Redis 연결 성공');
 } catch (error) {
