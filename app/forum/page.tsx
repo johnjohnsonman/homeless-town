@@ -243,23 +243,7 @@ export default function ForumPage() {
     }
   ]
 
-  // 기본 태그 (API에서 가져올 예정)
-  const defaultTags: Tag[] = [
-    { name: '시황', count: 156, isActive: selectedTag === '시황' },
-    { name: '부동산시장', count: 89, isActive: selectedTag === '부동산시장' },
-    { name: '임대시장', count: 67, isActive: selectedTag === '임대시장' },
-    { name: '분쟁사례', count: 45, isActive: selectedTag === '분쟁사례' },
-    { name: '보증금', count: 78, isActive: selectedTag === '보증금' },
-    { name: '월세인상', count: 92, isActive: selectedTag === '월세인상' },
-    { name: '계약해지', count: 34, isActive: selectedTag === '계약해지' },
-    { name: '입주체크', count: 56, isActive: selectedTag === '입주체크' },
-    { name: '집주인소통', count: 67, isActive: selectedTag === '집주인소통' },
-    { name: '법적권리', count: 89, isActive: selectedTag === '법적권리' },
-    { name: '안전수칙', count: 45, isActive: selectedTag === '안전수칙' },
-    { name: '부동산', count: 123, isActive: selectedTag === '부동산' },
-    { name: '투자', count: 78, isActive: selectedTag === '투자' },
-    { name: '정책', count: 56, isActive: selectedTag === '정책' }
-  ]
+  // 실제 API에서 가져온 태그들만 사용
 
   useEffect(() => {
     // API에서 데이터 가져오기
@@ -378,12 +362,12 @@ export default function ForumPage() {
                     <span className="text-xs opacity-70">{tags.find(t => t.name === '자유')?.count || 0}</span>
                   </div>
                 </button>
-                {defaultTags.map((tag) => (
+                {tags.map((tag) => (
                   <button
                     key={tag.name}
                     onClick={() => setSelectedTag(tag.name)}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                      tag.isActive
+                      selectedTag === tag.name
                         ? 'bg-brand-accent text-white'
                         : 'text-brand-ink hover:bg-brand-accent/10'
                     }`}

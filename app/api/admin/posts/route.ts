@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 import { generateSlug } from 'slugify'
-
-const prisma = new PrismaClient()
 
 // 자동 포스팅 API (관리자 전용)
 export async function POST(request: NextRequest) {
@@ -95,8 +93,6 @@ export async function POST(request: NextRequest) {
       { error: '게시글 생성 중 오류가 발생했습니다.' },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
   }
 }
 
@@ -166,7 +162,5 @@ export async function GET(request: NextRequest) {
       { error: '통계 조회 중 오류가 발생했습니다.' },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
   }
 }

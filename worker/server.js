@@ -14,10 +14,13 @@ app.get('/cron/enqueue', async (req, res) => {
     console.log(`🔑 받은 키: ${key}`);
     console.log(`🔑 설정된 키: ${process.env.CRON_KEY}`);
     
-    // 임시로 키 검증 비활성화 (디버깅용)
-    // if (!process.env.CRON_KEY || key !== process.env.CRON_KEY) {
-    //   return res.status(401).json({ ok: false, error: 'invalid key' });
-    // }
+    // 키 검증
+    if (!process.env.CRON_KEY || key !== process.env.CRON_KEY) {
+      console.log(`❌ 키 검증 실패: 받은 키=${key}, 설정된 키=${process.env.CRON_KEY}`);
+      return res.status(401).json({ ok: false, error: 'invalid key' });
+    }
+    
+    console.log('✅ 키 검증 성공, 자동 포스팅 시작...');
 
     await enqueueToday();
     res.json({ ok: true, message: '오늘 작업 등록 완료' });

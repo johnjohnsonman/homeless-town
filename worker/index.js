@@ -210,7 +210,7 @@ async function enqueueToday() {
               content,
               categorySlug: category,
               status: 'published',
-              tags: ['자동작성'],
+              tags: [category], // 카테고리를 태그로 사용
               author: '무주택촌봇',
             }),
           });
@@ -223,6 +223,21 @@ async function enqueueToday() {
             console.log(`✅ 게시글 생성 성공: ${title}`);
           } else {
             console.log(`❌ 게시글 생성 실패: ${title} - ${res.status}`);
+            console.log(`❌ 오류 상세: ${responseText}`);
+            
+            // 502 오류인 경우 메인 앱 상태 확인
+            if (res.status === 502) {
+              console.log(`🚨 502 오류 감지! 메인 앱 상태를 확인하세요.`);
+              console.log(`🔍 메인 앱 URL: ${process.env.SITE_BASE_URL}`);
+              console.log(`🔍 메인 앱 헬스체크 시도...`);
+              
+              try {
+                const healthCheck = await fetch(`${process.env.SITE_BASE_URL}/api/debug-db`);
+                console.log(`🔍 헬스체크 상태: ${healthCheck.status}`);
+              } catch (healthError) {
+                console.log(`🔍 헬스체크 실패: ${healthError.message}`);
+              }
+            }
           }
         } catch (error) {
           console.log(`❌ 게시글 생성 오류: ${title}`, error.message);
