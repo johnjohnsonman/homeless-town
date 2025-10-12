@@ -1,39 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-// POST: 토론글 좋아요/좋아요 취소
+// POST: 토론글 비공감/비공감 취소
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { id: postId } = params
     const { userId } = await request.json()
 
-    // 기존 좋아요 확인
-    const existingLike = await prisma.like.findFirst({
+    // 기존 비공감 확인
+    const existingDislike = await prisma.dislike.findFirst({
       where: {
         postId: postId,
         userId: userId || null
       }
     })
 
-    if (existingLike) {
-      // 좋아요 취소
-      await prisma.like.delete({
-        where: { id: existingLike.id }
+    if (existingDislike) {
+      // 비공감 취소
+      await prisma.dislike.delete({
+        where: { id: existingDislike.id }
       })
 
-      // 게시글의 좋아요 수 감소
+      // 게시글의 비공감 수 감소
       await prisma.post.update({
         where: { id: postId },
         data: {
-          upvotes: {
+          downvotes: {
             decrement: 1
           }
         }
       })
 
       const response = NextResponse.json({ 
-        liked: false,
-        message: '좋아요가 취소되었습니다.'
+        disliked: false,
+        message: '비공감이 취소되었습니다.'
       })
       
       // Render에서 동적 데이터 업데이트를 위해 캐시 방지
@@ -43,19 +43,19 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       
       return response
     } else {
-      // 좋아요 추가 (익명 사용자 지원)
-      await prisma.like.create({
+      // 비공감 추가 (익명 사용자 지원)
+      await prisma.dislike.create({
         data: {
           userId: userId || null,
           postId: postId
         }
       })
 
-      // 게시글 좋아요 수 증가
+      // 게시글 비공감 수 증가
       await prisma.post.update({
         where: { id: postId },
         data: {
-          upvotes: {
+          downvotes: {
             increment: 1
           }
         }
@@ -75,9 +75,9 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       })
 
       const response = NextResponse.json({ 
-        liked: true,
+        disliked: true,
         updatedPost,
-        message: '좋아요가 추가되었습니다.'
+        message: '비공감이 추가되었습니다.'
       })
       
       // Render에서 동적 데이터 업데이트를 위해 캐시 방지
@@ -88,15 +88,15 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return response
     }
   } catch (error) {
-    console.error('토론글 좋아요 처리 실패:', error)
+    console.error('토론글 비공감 처리 실패:', error)
     return NextResponse.json(
-      { error: '좋아요를 처리하는데 실패했습니다.' },
+      { error: '비공감을 처리하는데 실패했습니다.' },
       { status: 500 }
     )
   }
 }
 
-// GET: 사용자의 좋아요 상태 확인
+// GET: 사용자의 비공감 상태 확인
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -106,7 +106,7 @@ export async function GET(
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('userId')
 
-    const existingLike = await prisma.like.findFirst({
+    const existingDislike = await prisma.dislike.findFirst({
       where: {
         postId: postId,
         userId: userId || null
@@ -114,13 +114,13 @@ export async function GET(
     })
 
     return NextResponse.json({ 
-      liked: !!existingLike 
+      disliked: !!existingDislike 
     })
   } catch (error) {
-    console.error('좋아요 상태 확인 실패:', error)
+    console.error('비공감 상태 확인 실패:', error)
     return NextResponse.json(
-      { error: '좋아요 상태를 확인하는데 실패했습니다.' },
+      { error: '비공감 상태를 확인하는데 실패했습니다.' },
       { status: 500 }
     )
   }
-} 
+}

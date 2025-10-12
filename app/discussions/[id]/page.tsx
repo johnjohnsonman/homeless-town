@@ -204,7 +204,7 @@ export default function DiscussionDetailPage() {
 
   const handleLike = async () => {
     try {
-      const response = await fetch(`/api/posts/${postId}/like`, {
+      const response = await fetch(`/api/discussions/${postId}/like`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -221,6 +221,15 @@ export default function DiscussionDetailPage() {
             upvotes: data.liked ? post.upvotes + 1 : post.upvotes - 1
           })
         }
+        
+        // Forum 페이지의 태그 카운트 업데이트를 위한 이벤트 발생
+        window.dispatchEvent(new CustomEvent('vote-updated', {
+          detail: { 
+            postId: postId, 
+            upvotes: data.liked ? post.upvotes + 1 : post.upvotes - 1,
+            downvotes: post.downvotes
+          }
+        }))
       }
     } catch (error) {
       console.error('Failed to like post:', error)
@@ -231,7 +240,7 @@ export default function DiscussionDetailPage() {
 
   const handleDislike = async () => {
     try {
-      const response = await fetch(`/api/posts/${postId}/dislike`, {
+      const response = await fetch(`/api/discussions/${postId}/dislike`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -250,6 +259,15 @@ export default function DiscussionDetailPage() {
             downvotes: data.disliked ? post.downvotes + 1 : post.downvotes - 1
           })
         }
+        
+        // Forum 페이지의 태그 카운트 업데이트를 위한 이벤트 발생
+        window.dispatchEvent(new CustomEvent('vote-updated', {
+          detail: { 
+            postId: postId, 
+            upvotes: post.upvotes,
+            downvotes: data.disliked ? post.downvotes + 1 : post.downvotes - 1
+          }
+        }))
       }
     } catch (error) {
       console.error('Failed to dislike post:', error)

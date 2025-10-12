@@ -179,6 +179,55 @@ export default function ForumPage() {
     }
   }
 
+  // 게시글 공감 처리 함수
+  const handleVote = async (postId: string, voteType: 'like' | 'dislike') => {
+    try {
+      const currentUserId = `anonymous_${Date.now()}`
+      const apiEndpoint = voteType === 'like' 
+        ? `/api/discussions/${postId}/like`
+        : `/api/discussions/${postId}/dislike`
+      
+      const response = await fetch(apiEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: currentUserId }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        
+        // 게시글 목록의 공감 숫자 업데이트
+        setPosts(prevPosts => 
+          prevPosts.map(post => 
+            post.id === postId 
+              ? { 
+                  ...post, 
+                  upvotes: voteType === 'like' 
+                    ? (data.liked ? post.upvotes + 1 : post.upvotes - 1)
+                    : post.upvotes,
+                  downvotes: voteType === 'dislike'
+                    ? (data.disliked ? post.downvotes + 1 : post.downvotes - 1)
+                    : post.downvotes
+                }
+              : post
+          )
+        )
+        
+        // 인기토론글 및 태그 카운트 즉시 새로고침
+        await Promise.all([
+          refreshPopularDiscussions(),
+          refreshTagCounts()
+        ])
+        
+        console.log(`${voteType} 처리 완료:`, data)
+      }
+    } catch (error) {
+      console.error(`Failed to ${voteType} post:`, error)
+    }
+  }
+
   // 게시글 공감 처리 후 인기토론글 및 태그 카운트 업데이트
   const handleVoteUpdate = async (postId: string, newUpvotes: number, newDownvotes: number) => {
     // 게시글 목록의 공감 숫자 업데이트
@@ -527,6 +576,33 @@ export default function ForumPage() {
                             {getTimeAgo(post.createdAt)}
                           </span>
                         </div>
+                      </div>
+                      
+                      {/* Vote Buttons */}
+                      <div className="flex items-center justify-center space-x-4 mt-3 pt-3 border-t border-brand-border">
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            handleVote(post.id, 'like')
+                          }}
+                          className="flex items-center space-x-1 px-3 py-1 text-xs bg-brand-surface text-brand-muted rounded-lg hover:bg-brand-accent hover:text-white transition-colors"
+                        >
+                          <ThumbsUp className="w-3 h-3" />
+                          <span>공감 {post.upvotes}</span>
+                        </button>
+                        
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            handleVote(post.id, 'dislike')
+                          }}
+                          className="flex items-center space-x-1 px-3 py-1 text-xs bg-brand-surface text-brand-muted rounded-lg hover:bg-red-500 hover:text-white transition-colors"
+                        >
+                          <ThumbsDown className="w-3 h-3" />
+                          <span>비공감 {post.downvotes}</span>
+                        </button>
                       </div>
                     </div>
                   </div>
