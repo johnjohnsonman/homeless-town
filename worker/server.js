@@ -23,12 +23,17 @@ app.get('/cron/enqueue', async (req, res) => {
       return res.status(401).json({ ok: false, error: 'CRON_KEY not configured' });
     }
     
-    if (key !== process.env.CRON_KEY) {
+    // 임시로 키 검증을 더 유연하게 처리
+    const trimmedReceivedKey = key.trim();
+    const trimmedExpectedKey = process.env.CRON_KEY.trim();
+    
+    if (trimmedReceivedKey !== trimmedExpectedKey) {
       console.log(`❌ 키 검증 실패: 받은 키="${key}", 설정된 키="${process.env.CRON_KEY}"`);
+      console.log(`❌ 트림 후 비교: "${trimmedReceivedKey}" vs "${trimmedExpectedKey}"`);
       console.log(`❌ 문자별 비교:`);
-      for (let i = 0; i < Math.max(key.length, process.env.CRON_KEY.length); i++) {
-        const receivedChar = key[i] || 'undefined';
-        const expectedChar = process.env.CRON_KEY[i] || 'undefined';
+      for (let i = 0; i < Math.max(trimmedReceivedKey.length, trimmedExpectedKey.length); i++) {
+        const receivedChar = trimmedReceivedKey[i] || 'undefined';
+        const expectedChar = trimmedExpectedKey[i] || 'undefined';
         const match = receivedChar === expectedChar ? '✅' : '❌';
         console.log(`   ${i}: "${receivedChar}" vs "${expectedChar}" ${match}`);
       }
