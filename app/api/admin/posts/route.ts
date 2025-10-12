@@ -26,8 +26,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 슬러그 생성
-    const slug = slugify(title, { lower: true, strict: true })
+    // 슬러그 생성 (고유성 보장을 위해 타임스탬프 추가)
+    const baseSlug = slugify(title, { lower: true, strict: true })
+    const timestamp = Date.now()
+    const randomId = Math.random().toString(36).substring(2, 8)
+    const slug = `${baseSlug}-${timestamp}-${randomId}`
 
     // 게시글 생성
     const post = await prisma.post.create({
