@@ -78,11 +78,12 @@ export async function POST() {
     ]
     
     for (const tagName of defaultTags) {
+      const slug = tagName.toLowerCase().replace(/\s+/g, '-')
       await prisma.$executeRaw`
         INSERT INTO "Tag" ("id", "name", "slug", "createdAt")
-        VALUES (gen_random_uuid()::text, $1, $2, CURRENT_TIMESTAMP)
+        VALUES (gen_random_uuid()::text, ${tagName}, ${slug}, CURRENT_TIMESTAMP)
         ON CONFLICT ("name") DO NOTHING
-      `, tagName, tagName.toLowerCase().replace(/\s+/g, '-')
+      `
     }
     
     console.log('✅ 기본 태그 생성 완료')
