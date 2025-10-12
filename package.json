@@ -16,7 +16,9 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "create-admin": "node scripts/create-admin.js",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "worker": "node worker/server.js",
+    "worker:dev": "nodemon worker/server.js"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",
@@ -25,9 +27,11 @@
     "@types/bcryptjs": "^2.4.6",
     "autoprefixer": "^10.4.16",
     "bcryptjs": "^3.0.2",
+    "bullmq": "^5.61.0",
     "clsx": "^2.0.0",
     "cron": "^3.1.6",
     "date-fns": "^2.30.0",
+    "ioredis": "^5.8.1",
     "lucide-react": "^0.294.0",
     "next": "14.0.4",
     "openai": "^4.20.1",
