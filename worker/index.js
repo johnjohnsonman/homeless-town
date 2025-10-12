@@ -211,6 +211,7 @@ async function enqueueToday() {
               categorySlug: category,
               status: 'published',
               tags: ['자동작성'],
+              author: '무주택촌봇',
             }),
           });
 

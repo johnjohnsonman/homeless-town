@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
       id: post.id,
       title: post.title,
       content: post.content,
-      author: post.author || '익명',
+      author: post.nickname || '익명',
       nickname: post.nickname || '익명',
       views: post.views || 0,
       upvotes: post.upvotes || 0,

@@ -114,11 +114,28 @@ export default function ForumPage() {
       }
     }
 
+    const fetchTagCounts = async () => {
+      try {
+        const response = await fetch('/api/tags/counts')
+        const data = await response.json()
+        if (data.success && data.tags) {
+          setTags(data.tags)
+          console.log('태그 카운트 업데이트됨:', data.tags)
+        }
+      } catch (error) {
+        console.error('Failed to fetch tag counts:', error)
+      }
+    }
+
     fetchPosts()
     fetchPopularDiscussions()
+    fetchTagCounts()
     
     // 인기토론글을 30초마다 새로고침 (Render에서 동적 업데이트를 위해)
-    const interval = setInterval(fetchPopularDiscussions, 30000)
+    const interval = setInterval(() => {
+      fetchPopularDiscussions()
+      fetchTagCounts()
+    }, 30000)
     
     return () => clearInterval(interval)
   }, [currentPage, selectedTag, searchQuery])
@@ -358,7 +375,7 @@ export default function ForumPage() {
                 >
                   <div className="flex items-center justify-between">
                     <span>자유</span>
-                    <span className="text-xs opacity-70">234</span>
+                    <span className="text-xs opacity-70">{tags.find(t => t.name === '자유')?.count || 0}</span>
                   </div>
                 </button>
                 {defaultTags.map((tag) => (
