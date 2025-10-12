@@ -225,6 +225,26 @@ async function enqueueToday() {
             console.log(`❌ 게시글 생성 실패: ${title} - ${res.status}`);
             console.log(`❌ 오류 상세: ${responseText}`);
             
+            // 500 오류인 경우 상세 정보 출력
+            if (res.status === 500) {
+              console.log(`🚨 500 오류 감지! API 엔드포인트에서 오류 발생.`);
+              console.log(`🔍 메인 앱 URL: ${process.env.SITE_BASE_URL}`);
+              
+              try {
+                // 응답을 JSON으로 파싱하여 상세 오류 정보 확인
+                let errorDetails = responseText;
+                try {
+                  const errorJson = JSON.parse(responseText);
+                  errorDetails = JSON.stringify(errorJson, null, 2);
+                } catch (parseError) {
+                  // JSON 파싱 실패 시 원본 텍스트 사용
+                }
+                console.log(`🔍 API 오류 상세: ${errorDetails}`);
+              } catch (error) {
+                console.log(`🔍 오류 상세 파싱 실패: ${error.message}`);
+              }
+            }
+            
             // 502 오류인 경우 메인 앱 상태 확인
             if (res.status === 502) {
               console.log(`🚨 502 오류 감지! 메인 앱 상태를 확인하세요.`);

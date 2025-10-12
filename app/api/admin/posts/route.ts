@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { generateSlug } from 'slugify'
+import slugify from 'slugify'
 
 // 자동 포스팅 API (관리자 전용)
 export async function POST(request: NextRequest) {
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 슬러그 생성
-    const slug = generateSlug(title, { lower: true, strict: true })
+    const slug = slugify(title, { lower: true, strict: true })
 
     // 게시글 생성
     const post = await prisma.post.create({
@@ -87,10 +87,20 @@ export async function POST(request: NextRequest) {
       }
     })
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('자동 포스팅 생성 오류:', error)
+    console.error('오류 상세:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      cause: error.cause
+    })
     return NextResponse.json(
-      { error: '게시글 생성 중 오류가 발생했습니다.' },
+      { 
+        error: '게시글 생성 중 오류가 발생했습니다.',
+        details: error.message,
+        type: error.name
+      },
       { status: 500 }
     )
   }
