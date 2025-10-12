@@ -1,5 +1,5 @@
 // worker/index.js
-const { Queue, Worker, QueueScheduler } = require('bullmq');
+const { Queue, Worker } = require('bullmq');
 const IORedis = require('ioredis');
 
 // Node.js 18+ 에서 fetch 사용 가능, 그 이하 버전에서는 node-fetch 필요
@@ -11,7 +11,6 @@ const connection = new IORedis(process.env.REDIS_URL);
 // 큐 생성
 const queueName = 'postQueue';
 const postQueue = new Queue(queueName, { connection });
-new QueueScheduler(queueName, { connection });
 
 // 실제 작업자 로직
 new Worker(
