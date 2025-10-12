@@ -3,6 +3,17 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  })
+}
+
 export async function POST() {
   try {
     console.log('🚀 데이터베이스 마이그레이션 시작...')
@@ -102,7 +113,7 @@ export async function POST() {
     
     console.log('🎉 마이그레이션 완료!')
     
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: '데이터베이스 마이그레이션 완료',
       data: {
@@ -110,7 +121,14 @@ export async function POST() {
         tagCount: tagCount[0]?.count || 0,
         tablesCreated: ['Post', 'Tag', 'PostTag']
       }
-    })
+    });
+
+    // CORS 헤더 추가
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+    return response;
     
   } catch (error) {
     console.error('마이그레이션 오류:', error)
