@@ -182,7 +182,6 @@ export default function ForumPage() {
   // 게시글 공감 처리 함수
   const handleVote = async (postId: string, voteType: 'like' | 'dislike') => {
     try {
-      const currentUserId = `anonymous_${Date.now()}`
       const apiEndpoint = voteType === 'like' 
         ? `/api/discussions/${postId}/like`
         : `/api/discussions/${postId}/dislike`
@@ -192,23 +191,23 @@ export default function ForumPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userId: currentUserId }),
       })
 
       if (response.ok) {
         const data = await response.json()
+        console.log(`${voteType} response:`, data) // 디버깅용
         
-        // 게시글 목록의 공감 숫자 업데이트
+        // 게시글 목록의 공감 숫자 업데이트 (로그인 없이 무제한 공감)
         setPosts(prevPosts => 
           prevPosts.map(post => 
             post.id === postId 
               ? { 
                   ...post, 
                   upvotes: voteType === 'like' 
-                    ? (data.liked ? post.upvotes + 1 : post.upvotes - 1)
+                    ? (data.updatedPost?.upvotes || post.upvotes + 1)
                     : post.upvotes,
                   downvotes: voteType === 'dislike'
-                    ? (data.disliked ? post.downvotes + 1 : post.downvotes - 1)
+                    ? (data.updatedPost?.downvotes || post.downvotes + 1)
                     : post.downvotes
                 }
               : post
@@ -222,6 +221,8 @@ export default function ForumPage() {
         ])
         
         console.log(`${voteType} 처리 완료:`, data)
+      } else {
+        console.error(`${voteType} failed:`, response.status, response.statusText)
       }
     } catch (error) {
       console.error(`Failed to ${voteType} post:`, error)

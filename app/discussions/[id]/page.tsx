@@ -209,16 +209,18 @@ export default function DiscussionDetailPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userId: currentUserId }),
       })
 
       if (response.ok) {
         const data = await response.json()
-        setIsLiked(data.liked)
-        if (post) {
+        console.log('Like response:', data) // 디버깅용
+        
+        // 로그인 없이 무제한 공감이므로 항상 성공으로 처리
+        setIsLiked(true)
+        if (post && data.updatedPost) {
           setPost({
             ...post,
-            upvotes: data.liked ? post.upvotes + 1 : post.upvotes - 1
+            upvotes: data.updatedPost.upvotes
           })
         }
         
@@ -226,10 +228,12 @@ export default function DiscussionDetailPage() {
         window.dispatchEvent(new CustomEvent('vote-updated', {
           detail: { 
             postId: postId, 
-            upvotes: data.liked ? post.upvotes + 1 : post.upvotes - 1,
-            downvotes: post.downvotes
+            upvotes: data.updatedPost?.upvotes || post.upvotes + 1,
+            downvotes: data.updatedPost?.downvotes || post.downvotes
           }
         }))
+      } else {
+        console.error('Like failed:', response.status, response.statusText)
       }
     } catch (error) {
       console.error('Failed to like post:', error)
