@@ -6,7 +6,11 @@ const IORedis = require('ioredis');
 // const fetch = require('node-fetch');
 
 // Redis 연결
-const connection = new IORedis(process.env.REDIS_URL);
+const connection = new IORedis(process.env.REDIS_URL, {
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
+  lazyConnect: true
+});
 
 // 큐 생성
 const queueName = 'postQueue';
