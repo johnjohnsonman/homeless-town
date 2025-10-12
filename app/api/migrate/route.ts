@@ -78,10 +78,9 @@ export async function POST() {
     ]
     
     for (const tagName of defaultTags) {
-      const slug = tagName.toLowerCase().replace(/\s+/g, '-')
       await prisma.$executeRaw`
-        INSERT INTO "Tag" ("id", "name", "slug", "createdAt")
-        VALUES (gen_random_uuid()::text, ${tagName}, ${slug}, CURRENT_TIMESTAMP)
+        INSERT INTO "Tag" ("id", "name", "createdAt")
+        VALUES (gen_random_uuid()::text, ${tagName}, CURRENT_TIMESTAMP)
         ON CONFLICT ("name") DO NOTHING
       `
     }

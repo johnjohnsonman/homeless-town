@@ -24,7 +24,6 @@ export async function GET() {
     // 응답 데이터 포맷팅
     const tagsWithCounts = tagCounts.map(tag => ({
       name: tag.name,
-      slug: tag.slug,
       count: tag._count.posts
     }))
 
