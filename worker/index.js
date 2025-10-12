@@ -5,49 +5,59 @@ const IORedis = require('ioredis');
 // Node.js 18+ 에서 fetch 사용 가능, 그 이하 버전에서는 node-fetch 필요
 // const fetch = require('node-fetch');
 
-// Redis 연결
-const connection = new IORedis(process.env.REDIS_URL, {
-  maxRetriesPerRequest: null,
-  enableReadyCheck: false,
-  lazyConnect: true
-});
+// Redis 연결 (선택적)
+let connection = null;
+let postQueue = null;
 
-// 큐 생성
-const queueName = 'postQueue';
-const postQueue = new Queue(queueName, { connection });
+try {
+  connection = new IORedis(process.env.REDIS_URL, {
+    maxRetriesPerRequest: null,
+    enableReadyCheck: false,
+    lazyConnect: true
+  });
 
-// 실제 작업자 로직
-new Worker(
-  queueName,
-  async (job) => {
-    const { title, content, categorySlug } = job.data;
+  // 큐 생성
+  const queueName = 'postQueue';
+  postQueue = new Queue(queueName, { connection });
+  console.log('✅ Redis 연결 성공');
+} catch (error) {
+  console.log('⚠️ Redis 연결 실패, 메모리 모드로 실행:', error.message);
+}
 
-    console.log(`📢 게시글 생성 중: ${title}`);
+// 실제 작업자 로직 (Redis가 있을 때만)
+if (connection && postQueue) {
+  new Worker(
+    queueName,
+    async (job) => {
+      const { title, content, categorySlug } = job.data;
 
-    const res = await fetch(`${process.env.SITE_BASE_URL}/api/admin/posts`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.ADMIN_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        title,
-        content,
-        categorySlug,
-        status: 'published',
-        tags: ['자동작성'],
-      }),
-    });
+      console.log(`📢 게시글 생성 중: ${title}`);
 
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`❌ POST 실패: ${res.status} ${text}`);
-    }
+      const res = await fetch(`${process.env.SITE_BASE_URL}/api/admin/posts`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.ADMIN_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title,
+          content,
+          categorySlug,
+          status: 'published',
+          tags: ['자동작성'],
+        }),
+      });
 
-    await new Promise((r) => setTimeout(r, 1000)); // 게시 간격 (1초)
-  },
-  { connection, concurrency: 1 }
-);
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`❌ POST 실패: ${res.status} ${text}`);
+      }
+
+      await new Promise((r) => setTimeout(r, 1000)); // 게시 간격 (1초)
+    },
+    { connection, concurrency: 1 }
+  );
+}
 
 // 토론 주제 템플릿
 const discussionTemplates = {
@@ -168,8 +178,69 @@ function generateRealisticContent(category, title) {
 
 // 오늘 자동 글 등록
 async function enqueueToday() {
+  if (!postQueue) {
+    console.log('⚠️ Redis가 연결되지 않아 즉시 실행 모드로 전환');
+    
+    // Redis 없이 즉시 실행
+    const categories = Object.keys(discussionTemplates);
+    const TARGET_PER_CAT = Math.floor(160 / categories.length);
+    
+    console.log(`🚀 ${categories.length}개 카테고리에 총 ${TARGET_PER_CAT * categories.length}개 게시글 즉시 생성 시작`);
+
+    for (const category of categories) {
+      const templates = discussionTemplates[category];
+      
+      for (let i = 0; i < Math.min(TARGET_PER_CAT, 3); i++) { // 테스트용으로 3개만
+        let title;
+        if (i < templates.length) {
+          title = `[${category}] ${templates[i]}`;
+        } else {
+          const variations = [
+            `${category} 관련 질문드립니다`,
+            `${category} 경험담 공유해요`,
+            `${category} 궁금한 점이 있어요`
+          ];
+          title = `[${category}] ${variations[i % variations.length]} #${i + 1}`;
+        }
+
+        const content = generateRealisticContent(category, title);
+        
+        try {
+          const res = await fetch(`${process.env.SITE_BASE_URL}/api/admin/posts`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${process.env.ADMIN_TOKEN}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              title,
+              content,
+              categorySlug: category,
+              status: 'published',
+              tags: ['자동작성'],
+            }),
+          });
+
+          if (res.ok) {
+            console.log(`✅ 게시글 생성 성공: ${title}`);
+          } else {
+            console.log(`❌ 게시글 생성 실패: ${title}`);
+          }
+        } catch (error) {
+          console.log(`❌ 게시글 생성 오류: ${title}`, error.message);
+        }
+        
+        await new Promise((r) => setTimeout(r, 2000)); // 2초 간격
+      }
+    }
+    
+    console.log('🎉 즉시 실행 완료!');
+    return;
+  }
+
+  // Redis가 있을 때의 기존 로직
   const categories = Object.keys(discussionTemplates);
-  const TARGET_PER_CAT = Math.floor(160 / categories.length); // 총 160개 글을 카테고리별로 분배
+  const TARGET_PER_CAT = Math.floor(160 / categories.length);
 
   console.log(`🚀 ${categories.length}개 카테고리에 총 ${TARGET_PER_CAT * categories.length}개 게시글 등록 시작`);
 
@@ -177,12 +248,10 @@ async function enqueueToday() {
     const templates = discussionTemplates[category];
     
     for (let i = 0; i < TARGET_PER_CAT; i++) {
-      // 템플릿에서 랜덤 선택 또는 새로운 제목 생성
       let title;
       if (i < templates.length) {
         title = `[${category}] ${templates[i]}`;
       } else {
-        // 추가 제목 생성
         const variations = [
           `${category} 관련 질문드립니다`,
           `${category} 경험담 공유해요`,
@@ -195,7 +264,6 @@ async function enqueueToday() {
 
       const content = generateRealisticContent(category, title);
       
-      // 하루에 걸쳐 분산 배치 (24시간 / 총 글 수)
       const totalPosts = TARGET_PER_CAT * categories.length;
       const delayMs = Math.floor((i * categories.length + categories.indexOf(category)) * (24 * 60 * 60 * 1000) / totalPosts);
 
