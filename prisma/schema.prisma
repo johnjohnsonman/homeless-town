@@ -45,7 +45,6 @@ model User {
   totalComments Int @default(0)
   
   // 관계
-  posts         Post[]
   bookmarks     Bookmark[]
   profile       UserProfile?
   notifications UserNotification[]
@@ -60,7 +59,6 @@ model Post {
   title       String
   slug        String     @unique
   content     String
-  author      String?
   nickname    String     // DC인사이드 스타일 닉네임
   password    String     // DC인사이드 스타일 비밀번호
   type        String     @default("post") // "post", "discussion", "housing"
@@ -84,7 +82,6 @@ model Post {
   likes       Like[]
   dislikes    Dislike[]
   bookmarks   Bookmark[]
-  authorUser  User?      @relation(fields: [author], references: [id])
   files       FileUpload[]
 
   @@index([createdAt])
