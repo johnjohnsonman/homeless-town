@@ -195,6 +195,10 @@ async function enqueueToday() {
         const content = generateRealisticContent(category, title);
         
         try {
+          console.log(`📢 게시글 생성 시도: ${title}`);
+          console.log(`🔗 API URL: ${process.env.SITE_BASE_URL}/api/admin/posts`);
+          console.log(`🔑 Admin Token: ${process.env.ADMIN_TOKEN ? '설정됨' : '설정되지 않음'}`);
+          
           const res = await fetch(`${process.env.SITE_BASE_URL}/api/admin/posts`, {
             method: 'POST',
             headers: {
@@ -210,10 +214,14 @@ async function enqueueToday() {
             }),
           });
 
+          const responseText = await res.text();
+          console.log(`📊 응답 상태: ${res.status}`);
+          console.log(`📄 응답 내용: ${responseText}`);
+
           if (res.ok) {
             console.log(`✅ 게시글 생성 성공: ${title}`);
           } else {
-            console.log(`❌ 게시글 생성 실패: ${title}`);
+            console.log(`❌ 게시글 생성 실패: ${title} - ${res.status}`);
           }
         } catch (error) {
           console.log(`❌ 게시글 생성 오류: ${title}`, error.message);
