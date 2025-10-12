@@ -35,7 +35,6 @@ export async function POST(request: NextRequest) {
         title,
         slug,
         content,
-        author: body.author || '무주택촌봇',
         nickname: body.author || '무주택촌봇',
         password: '1234', // 자동 생성 게시글용 고정 비밀번호
         type: 'discussion',
