@@ -21,26 +21,35 @@ export async function POST() {
         "title" TEXT NOT NULL,
         "slug" TEXT NOT NULL UNIQUE,
         "content" TEXT NOT NULL,
+        "author" TEXT,
         "nickname" TEXT NOT NULL,
         "password" TEXT NOT NULL,
-        "type" TEXT NOT NULL DEFAULT 'discussion',
-        "urgent" BOOLEAN NOT NULL DEFAULT false,
-        "verified" BOOLEAN NOT NULL DEFAULT false,
+        "type" TEXT NOT NULL DEFAULT 'post',
         "marketTrend" TEXT,
         "isHot" BOOLEAN NOT NULL DEFAULT false,
-        "isNew" BOOLEAN NOT NULL DEFAULT false,
+        "isNew" BOOLEAN NOT NULL DEFAULT true,
         "isPopular" BOOLEAN NOT NULL DEFAULT false,
-        "adminPick" BOOLEAN NOT NULL DEFAULT false,
+        "urgent" BOOLEAN NOT NULL DEFAULT false,
+        "verified" BOOLEAN NOT NULL DEFAULT false,
         "upvotes" INTEGER NOT NULL DEFAULT 0,
         "downvotes" INTEGER NOT NULL DEFAULT 0,
         "views" INTEGER NOT NULL DEFAULT 0,
         "commentCount" INTEGER NOT NULL DEFAULT 0,
+        "adminPick" BOOLEAN NOT NULL DEFAULT false,
         "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
         "updatedAt" TIMESTAMP(3) NOT NULL
       )
     `
     
     console.log('✅ Post 테이블 생성 완료')
+    
+    // author 컬럼이 없다면 추가
+    try {
+      await prisma.$executeRaw`ALTER TABLE "Post" ADD COLUMN "author" TEXT;`
+      console.log('✅ author 컬럼 추가 완료')
+    } catch (error) {
+      console.log('ℹ️ author 컬럼이 이미 존재합니다')
+    }
     
     // Tag 테이블 생성
     await prisma.$executeRaw`
