@@ -10,19 +10,8 @@ let connection = null;
 let postQueue = null;
 const queueName = 'postQueue';
 
-try {
-  connection = new IORedis(process.env.REDIS_URL, {
-    maxRetriesPerRequest: null,
-    enableReadyCheck: false,
-    lazyConnect: true
-  });
-
-  // 큐 생성
-  postQueue = new Queue(queueName, { connection });
-  console.log('✅ Redis 연결 성공');
-} catch (error) {
-  console.log('⚠️ Redis 연결 실패, 메모리 모드로 실행:', error.message);
-}
+// Redis 연결 완전 비활성화 (메모리 모드로 실행)
+console.log('⚠️ Redis 연결 비활성화, 메모리 모드로 실행');
 
 // 실제 작업자 로직 (Redis가 있을 때만)
 if (connection && postQueue) {
