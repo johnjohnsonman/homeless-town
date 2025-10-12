@@ -11,12 +11,27 @@ app.get('/health', (req, res) => res.json({ ok: true }));
 app.get('/cron/enqueue', async (req, res) => {
   try {
     const key = req.query.key || '';
-    console.log(`🔑 받은 키: ${key}`);
-    console.log(`🔑 설정된 키: ${process.env.CRON_KEY}`);
+    console.log(`🔑 받은 키: "${key}"`);
+    console.log(`🔑 받은 키 길이: ${key.length}`);
+    console.log(`🔑 설정된 키: "${process.env.CRON_KEY}"`);
+    console.log(`🔑 설정된 키 길이: ${process.env.CRON_KEY ? process.env.CRON_KEY.length : 'undefined'}`);
+    console.log(`🔑 키 일치 여부: ${key === process.env.CRON_KEY}`);
     
     // 키 검증
-    if (!process.env.CRON_KEY || key !== process.env.CRON_KEY) {
-      console.log(`❌ 키 검증 실패: 받은 키=${key}, 설정된 키=${process.env.CRON_KEY}`);
+    if (!process.env.CRON_KEY) {
+      console.log(`❌ CRON_KEY 환경변수가 설정되지 않음`);
+      return res.status(401).json({ ok: false, error: 'CRON_KEY not configured' });
+    }
+    
+    if (key !== process.env.CRON_KEY) {
+      console.log(`❌ 키 검증 실패: 받은 키="${key}", 설정된 키="${process.env.CRON_KEY}"`);
+      console.log(`❌ 문자별 비교:`);
+      for (let i = 0; i < Math.max(key.length, process.env.CRON_KEY.length); i++) {
+        const receivedChar = key[i] || 'undefined';
+        const expectedChar = process.env.CRON_KEY[i] || 'undefined';
+        const match = receivedChar === expectedChar ? '✅' : '❌';
+        console.log(`   ${i}: "${receivedChar}" vs "${expectedChar}" ${match}`);
+      }
       return res.status(401).json({ ok: false, error: 'invalid key' });
     }
     
