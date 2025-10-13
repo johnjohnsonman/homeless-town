@@ -179,33 +179,30 @@ const commentTemplates = [
 ];
 
 // OpenAI API를 사용한 다양한 게시글 생성
-async function generateRealisticContent(category, title) {
+async function generateRealisticContent(category, title, postType, usePolite) {
   try {
-    // 게시글 유형 랜덤 선택 (질문, 팁, 경험담, 후기, 고민, 정보공유)
-    const postTypes = ['질문', '팁', '경험담', '후기', '고민', '정보공유'];
-    const selectedType = postTypes[Math.floor(Math.random() * postTypes.length)];
-    
     const prompt = `당신은 무주택 세입자 커뮤니티의 활발한 회원입니다. 
 카테고리: ${category}
 제목: ${title}
-글 유형: ${selectedType}
+글 유형: ${postType}
+말투: ${usePolite ? '존댓말' : '반말'}
 
 다음 규칙을 따라 게시글을 작성해주세요:
-1. ${selectedType} 형식으로 작성 (질문이면 궁금한 점, 팁이면 유용한 정보, 경험담이면 실제 경험, 후기면 결과 공유, 고민이면 고민 토로, 정보공유면 유용한 정보)
-2. 자연스러운 DC 스타일 반말 사용 (존댓말 금지)
+1. ${postType === '질문' ? '궁금한 점을 구체적으로 질문' : '유용한 정보나 경험을 구체적으로 공유'}
+2. ${usePolite ? '정중한 존댓말 사용 (예: ~입니다, ~해요, ~인가요?)' : '자연스러운 DC 스타일 반말 사용 (예: ~임, ~함, ~인가?)'}
 3. 이모지 적절히 사용 (😊, 😭, 💸, 🏠 등)
 4. 실제 세입자가 쓴 것처럼 구체적이고 생생하게
 5. HTML 태그 사용 금지
 6. 3-5문장 정도의 적당한 길이
 7. 친근하고 공감가는 톤으로
 
-예시:
+예시 (반말):
 - 질문: "월세 협상 어떻게 해야 함? 집주인한테 뭐라고 말해야 깎아줄까? 경험담 좀 알려줘 ㅠㅠ"
-- 팁: "보증금 돌려받을 때 이거 꼭 체크하셈. 나는 이거 몰라서 50만원 날렸음 ㅡㅡ 입주할 때 사진 다 찍어두고..."
-- 경험담: "전세에서 월세로 바꿨는데 진짜 속이 시원함 ㅋㅋ 보증금 부담 없어지니까 정신건강에 좋더라"
-- 후기: "직방에서 집 구했는데 생각보다 괜찮네? 중개비도 아끼고 집도 빨리 구함 👍"
-- 고민: "월세가 너무 올라서 이사 가야할지 고민됨... 이 동네 정든거 아는데 월세가 감당이 안돼"
-- 정보공유: "임대차 계약할 때 이거 꼭 확인하셈! 특약사항에 이상한거 없는지 체크하고..."
+- 정보: "보증금 돌려받을 때 이거 꼭 체크하셈. 나는 이거 몰라서 50만원 날렸음 ㅡㅡ 입주할 때 사진 다 찍어두고, 퇴실 때도 똑같이 찍어서 비교해라. 특히 벽지, 장판, 싱크대 상태 제일 중요함"
+
+예시 (존댓말):
+- 질문: "월세 협상은 어떻게 하면 좋을까요? 집주인분께 어떻게 말씀드려야 할지 고민이에요 ㅠㅠ 경험담 공유 부탁드립니다!"
+- 정보: "보증금 돌려받을 때 이것만은 꼭 체크하세요. 저는 몰라서 50만원 손해 봤습니다 😭 입주할 때 사진을 다 찍어두시고, 퇴실할 때도 똑같이 찍어서 비교하세요. 특히 벽지, 장판, 싱크대 상태가 제일 중요해요!"
 
 게시글 내용만 작성하고, 다른 설명은 하지 마세요.`;
 
@@ -221,15 +218,67 @@ async function generateRealisticContent(category, title) {
           content: prompt
         }
       ],
-      temperature: 0.9, // 더 다양한 결과를 위해 높임
+      temperature: 0.9,
       max_tokens: 300,
     });
 
     return response.choices[0].message.content.trim();
   } catch (error) {
     console.error('OpenAI API 오류:', error.message);
-    // API 실패 시 간단한 폴백
     return generateFallbackContent(category, title);
+  }
+}
+
+// 게시글에 대한 댓글 생성 (OpenAI API 사용)
+async function generateComments(postContent, postType, category, commentCount, postUsePolite) {
+  try {
+    const prompt = `당신은 무주택 세입자 커뮤니티의 다양한 회원들입니다.
+게시글 유형: ${postType}
+게시글 내용: ${postContent}
+카테고리: ${category}
+
+${postType === '질문' ? '이 질문에 대한 답변 댓글' : '이 정보글에 대한 반응 댓글'} ${commentCount}개를 작성해주세요.
+
+규칙:
+1. 각 댓글은 서로 다른 사람이 작성한 것처럼 다양한 톤 사용
+2. 반말과 존댓말을 랜덤하게 섞어서 사용 (각 댓글마다 다른 말투)
+3. ${postType === '질문' ? '구체적이고 실용적인 답변이나 경험담' : '공감, 질문, 추가 정보 제공 등 다양한 반응'}
+4. 이모지 적절히 사용
+5. 각 댓글은 2-4문장 정도
+6. 댓글마다 줄바꿈으로 구분 (구분자: |||)
+
+예시 (질문글 - 반말과 존댓말 혼합):
+ㄹㅇ 나도 궁금했던건데 ㅋㅋ 집주인한테 솔직하게 말하면 의외로 협상 잘됨|||저는 작년에 5만원 깎았어요 ㅎㅎ 시세 조사해서 가격표 보여드리면서 얘기했더니 바로 OK 나오더라구요|||월세는 협상 안되는줄 알았는데 가능하구나 ㄷㄷ 나도 해봐야지|||오 꿀팁이네요! 저장했습니다 감사합니다 ^^
+
+예시 (정보글 - 반말과 존댓말 혼합):
+오 이거 진짜 유용한 정보다 👍|||완전 공감해요 ㅠㅠ 저도 사진 안찍어놔서 보증금 깎였거든요|||이런 정보 너무 감사함 ㅋㅋ 다음에 이사갈 때 꼭 해야지|||벽지 하나 찢어졌다고 30만원 뜯겼어요 ㅡㅡ 정말 황당했습니다
+
+댓글들만 작성하고, 다른 설명은 하지 마세요.`;
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'system',
+          content: '당신은 무주택 세입자 커뮤니티의 다양한 회원들입니다. 각자 다른 톤으로 댓글을 작성합니다.'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      temperature: 1.0, // 더 다양한 댓글을 위해
+      max_tokens: 400,
+    });
+
+    const commentsText = response.choices[0].message.content.trim();
+    return commentsText.split('|||').map(c => c.trim()).filter(c => c.length > 0);
+  } catch (error) {
+    console.error('댓글 생성 API 오류:', error.message);
+    // 폴백 댓글
+    return postType === '질문' 
+      ? ['답변 감사합니다!', '저도 궁금했는데 ㅋㅋ', '오 이거 좋은 정보네요']
+      : ['공감합니다 ㅠㅠ', '저도 비슷한 경험 있어요', '유용한 정보 감사합니다!'];
   }
 }
 
@@ -317,22 +366,36 @@ async function enqueueToday() {
       
       for (let i = 0; i < Math.min(TARGET_PER_CAT, 3); i++) { // 테스트용으로 3개만
         let title;
+        let postType;
+        
+        // 질문과 정보글을 1:1 비율로 생성
+        if (i % 2 === 0) {
+          postType = '질문';
+        } else {
+          postType = '정보';
+        }
+        
+        // 반말과 존댓말을 랜덤하게 선택 (50:50)
+        const usePolite = Math.random() < 0.5;
         
         // 모든 템플릿을 랜덤하게 섞어서 사용
         const shuffledTemplates = [...templates].sort(() => Math.random() - 0.5);
         const baseTemplate = shuffledTemplates[i % shuffledTemplates.length];
         
-        // 제목에 랜덤 요소 추가하여 중복 방지
-        const randomSuffixes = [
-          '', ' 정말 고민이에요', ' 도움 부탁드려요', ' 조언 구해요', 
-          ' 경험담 공유해요', ' 궁금해요', ' 어떻게 해야 할까요?',
-          ' 팁 있나요?', ' 정보 부탁드려요', ' 의견 궁금해요'
-        ];
+        // 제목에 유형별 접미사 추가
+        const questionSuffixes = ['?', ' 궁금해요', ' 어떻게 해야 할까요?', ' 조언 구해요', ' 도움 부탁드려요'];
+        const infoSuffixes = [' 꿀팁', ' 경험담 공유', ' 정보 공유', ' 후기', ' 팁 공유'];
         
-        const randomSuffix = randomSuffixes[Math.floor(Math.random() * randomSuffixes.length)];
+        const randomSuffix = postType === '질문'
+          ? questionSuffixes[Math.floor(Math.random() * questionSuffixes.length)]
+          : infoSuffixes[Math.floor(Math.random() * infoSuffixes.length)];
+        
         title = `[${category}] ${baseTemplate}${randomSuffix}`;
 
-        const content = await generateRealisticContent(category, title);
+        const content = await generateRealisticContent(category, title, postType, usePolite);
+        const author = diverseAuthors[Math.floor(Math.random() * diverseAuthors.length)];
+        
+        console.log(`📝 게시글 유형: ${postType} | 말투: ${usePolite ? '존댓말' : '반말'}`);
         
         try {
           console.log(`📢 게시글 생성 시도: ${title}`);
@@ -361,6 +424,53 @@ async function enqueueToday() {
 
           if (res.ok) {
             console.log(`✅ 게시글 생성 성공: ${title}`);
+            
+            // 게시글 생성 성공 시 댓글 추가
+            try {
+              const postData = JSON.parse(responseText);
+              const postId = postData.post?.id;
+              
+              if (postId) {
+                // 2~5개의 랜덤 댓글 수 결정
+                const commentCount = Math.floor(Math.random() * 4) + 2; // 2~5
+                console.log(`💬 댓글 ${commentCount}개 생성 중...`);
+                
+                // 댓글 생성 (게시글 말투 정보 전달)
+                const comments = await generateComments(content, postType, category, commentCount, usePolite);
+                
+                // 각 댓글을 순차적으로 작성
+                for (const commentContent of comments) {
+                  const commentAuthor = diverseAuthors[Math.floor(Math.random() * diverseAuthors.length)];
+                  
+                  try {
+                    const commentRes = await fetch(`${process.env.SITE_BASE_URL}/api/posts/${postId}/comments`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        content: commentContent,
+                        author: commentAuthor,
+                        nickname: commentAuthor,
+                      }),
+                    });
+                    
+                    if (commentRes.ok) {
+                      console.log(`✅ 댓글 작성 성공: ${commentContent.substring(0, 30)}...`);
+                    } else {
+                      console.log(`❌ 댓글 작성 실패: ${commentRes.status}`);
+                    }
+                    
+                    // 댓글 작성 간격 (0.5초)
+                    await new Promise((r) => setTimeout(r, 500));
+                  } catch (commentError) {
+                    console.error(`댓글 작성 오류:`, commentError.message);
+                  }
+                }
+              }
+            } catch (commentError) {
+              console.error(`댓글 생성 과정 오류:`, commentError.message);
+            }
           } else {
             console.log(`❌ 게시글 생성 실패: ${title} - ${res.status}`);
             console.log(`❌ 오류 상세: ${responseText}`);
