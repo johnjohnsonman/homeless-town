@@ -108,15 +108,77 @@ function getRandomAuthor() {
   return authorPool[Math.floor(Math.random() * authorPool.length)];
 }
 
+// 카테고리 섞기 함수
+function shuffleArray(array) {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+// 댓글 템플릿
+const commentTemplates = [
+  '공감합니다! 저도 비슷한 경험이 있어요.',
+  '좋은 정보 감사합니다. 도움이 되었어요.',
+  '저도 궁금했던 내용이에요. 댓글 남기고 갑니다.',
+  '이런 정보가 정말 필요했어요. 감사합니다!',
+  '비슷한 상황인데 어떻게 해결하셨나요?',
+  '좋은 글 감사합니다. 추천드려요!',
+  '저도 같은 고민이 있었는데 도움이 되네요.',
+  '정보 공유 감사합니다. 잘 읽었습니다.',
+  '이런 내용 정말 유용하네요. 북마크!',
+  '도움이 많이 되었습니다. 감사합니다.'
+];
+
+// 랜덤 댓글 생성
+function getRandomComment() {
+  return commentTemplates[Math.floor(Math.random() * commentTemplates.length)];
+}
+
+// 댓글 생성 함수
+async function createComment(postId) {
+  try {
+    const res = await fetch(`${process.env.SITE_BASE_URL}/api/posts/${postId}/comments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        content: getRandomComment(),
+        author: getRandomAuthor()
+      }),
+    });
+    
+    if (res.ok) {
+      console.log(`💬 댓글 생성 성공 (게시글 ID: ${postId})`);
+      return true;
+    } else {
+      const errorText = await res.text();
+      console.log(`❌ 댓글 생성 실패 (게시글 ID: ${postId}): ${errorText}`);
+      return false;
+    }
+  } catch (error) {
+    console.log(`❌ 댓글 생성 오류 (게시글 ID: ${postId}):`, error.message);
+    return false;
+  }
+}
+
 // 개선된 자동 포스팅 함수
 async function improvedAutoPosting() {
   console.log('🚀 개선된 자동 포스팅 시작...');
   
   const categories = Object.keys(discussionTemplates);
+  // 카테고리를 섞어서 같은 카테고리가 연속으로 나오지 않도록 함
+  const shuffledCategories = shuffleArray(categories);
+  
   let successCount = 0;
   let failCount = 0;
+  let commentSuccessCount = 0;
+  let commentFailCount = 0;
   
-  for (const category of categories) {
+  for (const category of shuffledCategories) {
     console.log(`📝 ${category} 카테고리 포스팅 시작...`);
     
     for (let i = 0; i < 3; i++) {
@@ -154,6 +216,27 @@ async function improvedAutoPosting() {
         if (res.ok) {
           console.log(`✅ 게시글 생성 성공: ${template.title}`);
           successCount++;
+          
+          // 게시글 생성 성공 후 댓글 생성 시도
+          try {
+            const responseData = JSON.parse(responseText);
+            const postId = responseData.post?.id;
+            
+            if (postId) {
+              console.log(`💬 댓글 생성 시도 (게시글 ID: ${postId})`);
+              await new Promise(resolve => setTimeout(resolve, 2000)); // 2초 대기
+              
+              const commentSuccess = await createComment(postId);
+              if (commentSuccess) {
+                commentSuccessCount++;
+              } else {
+                commentFailCount++;
+              }
+            }
+          } catch (commentError) {
+            console.log(`❌ 댓글 생성 오류:`, commentError.message);
+            commentFailCount++;
+          }
         } else {
           console.log(`❌ 게시글 생성 실패: ${template.title} - ${res.status}`);
           failCount++;
@@ -168,8 +251,18 @@ async function improvedAutoPosting() {
     }
   }
   
-  console.log(`🎉 자동 포스팅 완료! 성공: ${successCount}, 실패: ${failCount}`);
-  return { success: successCount, fail: failCount };
+  console.log(`🎉 자동 포스팅 완료!`);
+  console.log(`📊 게시글 - 성공: ${successCount}, 실패: ${failCount}`);
+  console.log(`💬 댓글 - 성공: ${commentSuccessCount}, 실패: ${commentFailCount}`);
+  
+  return { 
+    success: successCount, 
+    fail: failCount,
+    comments: {
+      success: commentSuccessCount,
+      fail: commentFailCount
+    }
+  };
 }
 
 // API 엔드포인트
