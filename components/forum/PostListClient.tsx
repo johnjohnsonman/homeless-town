@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ArrowUpIcon, ArrowDownIcon, EyeIcon } from '@heroicons/react/24/outline'
+import { ArrowUpIcon, ArrowDownIcon, EyeIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/outline'
 import { formatDistanceToNow } from 'date-fns'
 import { ko } from 'date-fns/locale'
 
@@ -12,7 +12,9 @@ interface Post {
   slug: string
   createdAt: string
   upvotes: number
+  downvotes: number
   views: number
+  commentCount: number
   adminPick: boolean
   tags: Array<{
     tag: {
@@ -225,6 +227,10 @@ export default function PostListClient({
                     locale: ko,
                   })}
                 </span>
+                <div className="flex items-center gap-1">
+                  <ChatBubbleLeftIcon className="w-4 h-4" />
+                  <span>{post.commentCount}</span>
+                </div>
                 <div className="flex items-center gap-1">
                   <EyeIcon className="w-4 h-4" />
                   <span>{post.views}</span>

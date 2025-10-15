@@ -40,6 +40,8 @@ export async function GET(request: NextRequest) {
         title: true,
         slug: true,
         upvotes: true,
+        commentCount: true,
+        views: true,
         adminPick: true,
       },
       orderBy: {
@@ -61,6 +63,8 @@ export async function GET(request: NextRequest) {
         title: true,
         slug: true,
         upvotes: true,
+        commentCount: true,
+        views: true,
         adminPick: true,
       },
       orderBy: {

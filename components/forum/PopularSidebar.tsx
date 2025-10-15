@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from 'react'
 import { FireIcon } from '@heroicons/react/24/solid'
+import { ChatBubbleLeftIcon, EyeIcon } from '@heroicons/react/24/outline'
 
 interface PopularPost {
   id: string
   title: string
   slug: string
   upvotes: number
+  commentCount: number
+  views: number
   adminPick: boolean
 }
 
@@ -91,7 +94,15 @@ export default function PopularSidebar() {
                       {post.title}
                     </h3>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-brand-muted">
+                  <div className="flex items-center gap-3 text-xs text-brand-muted">
+                    <div className="flex items-center gap-1">
+                      <ChatBubbleLeftIcon className="w-3.5 h-3.5" />
+                      <span>{post.commentCount}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <EyeIcon className="w-3.5 h-3.5" />
+                      <span>{post.views}</span>
+                    </div>
                     <span>추천 {post.upvotes}</span>
                   </div>
                 </div>

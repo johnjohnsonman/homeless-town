@@ -77,7 +77,9 @@ export async function GET(request: Request) {
       createdAt: post.createdAt,
       updatedAt: post.updatedAt,
       upvotes: post.upvotes,
+      downvotes: post.downvotes,
       views: post.views,
+      commentCount: post.commentCount,
       adminPick: post.adminPick,
       tags: post.tags.map(pt => ({
         id: pt.tag.id,
