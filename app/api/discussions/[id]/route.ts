@@ -10,6 +10,16 @@ export async function GET(
   try {
     const { id } = params
 
+    // 조회수 증가
+    await prisma.post.update({
+      where: { id },
+      data: {
+        views: {
+          increment: 1
+        }
+      }
+    })
+
     const post = await prisma.post.findUnique({
       where: { id },
       include: {
