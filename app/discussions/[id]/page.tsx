@@ -29,6 +29,8 @@ import {
   Scale,
   Users
 } from 'lucide-react'
+import { formatDistanceToNow } from 'date-fns'
+import { ko } from 'date-fns/locale'
 
 interface Post {
   id: string
@@ -167,14 +169,15 @@ export default function DiscussionDetailPage() {
   }, [postId])
 
   const getTimeAgo = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
-    
-    if (diffInHours < 1) return '방금 전'
-    if (diffInHours < 24) return `${diffInHours}시간 전`
-    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}일 전`
-    return date.toLocaleDateString()
+    try {
+      return formatDistanceToNow(new Date(dateString), {
+        addSuffix: true,
+        locale: ko
+      })
+    } catch (error) {
+      console.error('시간 변환 오류:', error)
+      return '방금 전'
+    }
   }
 
   const getMarketTrendIcon = (trend: 'up' | 'down' | null) => {
@@ -217,10 +220,12 @@ export default function DiscussionDetailPage() {
         
         // 로그인 없이 무제한 공감이므로 항상 성공으로 처리
         setIsLiked(true)
-        if (post && data.updatedPost) {
+        
+        // post 상태 업데이트
+        if (post) {
           setPost({
             ...post,
-            upvotes: data.updatedPost.upvotes
+            upvotes: data.updatedPost ? data.updatedPost.upvotes : post.upvotes + 1
           })
         }
         
@@ -228,8 +233,8 @@ export default function DiscussionDetailPage() {
         window.dispatchEvent(new CustomEvent('vote-updated', {
           detail: { 
             postId: postId, 
-            upvotes: data.updatedPost?.upvotes || post.upvotes + 1,
-            downvotes: data.updatedPost?.downvotes || post.downvotes
+            upvotes: data.updatedPost?.upvotes || (post ? post.upvotes + 1 : 0),
+            downvotes: data.updatedPost?.downvotes || (post ? post.downvotes : 0)
           }
         }))
       } else {
@@ -254,13 +259,15 @@ export default function DiscussionDetailPage() {
 
       if (response.ok) {
         const data = await response.json()
+        console.log('Dislike response:', data) // 디버깅용
+        
         setIsDisliked(data.disliked)
         
         // 게시글 싫어요 수 업데이트
         if (post) {
           setPost({
             ...post,
-            downvotes: data.disliked ? post.downvotes + 1 : post.downvotes - 1
+            downvotes: data.updatedPost ? data.updatedPost.downvotes : (data.disliked ? post.downvotes + 1 : post.downvotes - 1)
           })
         }
         
@@ -269,7 +276,7 @@ export default function DiscussionDetailPage() {
           detail: { 
             postId: postId, 
             upvotes: post.upvotes,
-            downvotes: data.disliked ? post.downvotes + 1 : post.downvotes - 1
+            downvotes: data.updatedPost ? data.updatedPost.downvotes : (data.disliked ? post.downvotes + 1 : post.downvotes - 1)
           }
         }))
       }
