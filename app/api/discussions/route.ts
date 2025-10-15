@@ -49,8 +49,25 @@ export async function GET(request: NextRequest) {
       prisma.post.count({ where })
     ])
 
+    // 각 게시글의 실제 댓글 수 조회
+    const postsWithCommentCount = await Promise.all(
+      posts.map(async (post) => {
+        const actualCommentCount = await prisma.comment.count({
+          where: {
+            postId: post.id,
+            parentId: null // 대댓글이 아닌 최상위 댓글만
+          }
+        });
+        
+        return {
+          ...post,
+          actualCommentCount
+        };
+      })
+    );
+
     // 응답 데이터 포맷팅
-    const discussions = posts.map(post => ({
+    const discussions = postsWithCommentCount.map(post => ({
       id: post.id,
       title: post.title,
       content: post.content,
@@ -59,7 +76,7 @@ export async function GET(request: NextRequest) {
       views: post.views || 0,
       upvotes: post.upvotes || 0,
       downvotes: post.downvotes || 0,
-      commentCount: post.commentCount || 0,
+      commentCount: post.actualCommentCount, // 실제 댓글 수 사용
       createdAt: post.createdAt,
       updatedAt: post.updatedAt,
       tags: post.tags.map(pt => pt.tag.name),
