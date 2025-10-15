@@ -236,12 +236,30 @@ async function improvedAutoPosting() {
   let commentSuccessCount = 0;
   let commentFailCount = 0;
   
+  // 이전에 사용한 카테고리 추적 (같은 카테고리가 연속으로 나오지 않도록)
+  let lastCategory = null;
+  
   for (const category of shuffledCategories) {
     console.log(`📝 ${category} 카테고리 포스팅 시작...`);
     
+    // 이 카테고리 내에서 사용한 템플릿 추적
+    const usedTemplates = [];
+    
     for (let i = 0; i < 3; i++) {
       const templates = discussionTemplates[category];
-      const template = templates[Math.floor(Math.random() * templates.length)];
+      
+      // 사용하지 않은 템플릿만 필터링
+      const availableTemplates = templates.filter(t => !usedTemplates.includes(t.title));
+      
+      // 사용 가능한 템플릿이 없으면 초기화
+      if (availableTemplates.length === 0) {
+        usedTemplates.length = 0;
+        availableTemplates.push(...templates);
+      }
+      
+      // 사용 가능한 템플릿 중 랜덤 선택
+      const template = availableTemplates[Math.floor(Math.random() * availableTemplates.length)];
+      usedTemplates.push(template.title);
       
       const author = getRandomAuthor();
       
