@@ -45,25 +45,32 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   }
 }
 
-// GET: 사용자의 좋아요 상태 확인
+// GET: 게시글 좋아요 수 조회
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id: postId } = params
-    const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId')
+    const postId = params.id
 
-    const existingLike = await prisma.like.findFirst({
-      where: {
-        postId: postId,
-        userId: userId || null
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+      select: {
+        upvotes: true,
+        downvotes: true
       }
     })
 
+    if (!post) {
+      return NextResponse.json(
+        { error: '게시글을 찾을 수 없습니다.' },
+        { status: 404 }
+      )
+    }
+
     return NextResponse.json({ 
-      liked: !!existingLike 
+      upvotes: post.upvotes,
+      downvotes: post.downvotes
     })
   } catch (error) {
     console.error('좋아요 상태 확인 실패:', error)
@@ -72,4 +79,5 @@ export async function GET(
       { status: 500 }
     )
   }
-} 
+}
+
