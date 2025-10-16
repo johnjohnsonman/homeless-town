@@ -31,12 +31,13 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 토론글 데이터 조회
-    const [posts, total] = await Promise.all([
+    // 토론글 데이터 조회 (더 많은 데이터를 가져와서 태그 섞기)
+    const fetchLimit = Math.max(limit * 2, 20) // 최소 20개 이상 가져오기
+    const [allPosts, total] = await Promise.all([
       prisma.post.findMany({
         where,
         skip,
-        take: limit,
+        take: fetchLimit,
         include: {
           tags: {
             include: {
@@ -48,6 +49,54 @@ export async function GET(request: NextRequest) {
       }),
       prisma.post.count({ where })
     ])
+    
+    // 태그를 섞어서 같은 태그가 연속으로 나오지 않게 정렬
+    const shuffledPosts: typeof allPosts = []
+    const used = new Set<number>()
+    
+    let lastTag: string | null = null
+    let attempts = 0
+    const maxAttempts = allPosts.length * 2
+    
+    while (shuffledPosts.length < Math.min(limit, allPosts.length) && attempts < maxAttempts) {
+      let found = false
+      
+      // 다른 태그를 가진 게시글 찾기
+      for (let i = 0; i < allPosts.length; i++) {
+        if (used.has(i)) continue
+        
+        const post = allPosts[i]
+        const postTags = post.tags.map(t => t.tag.name)
+        const firstTag = postTags[0] || '기타'
+        
+        // 마지막 태그와 다른 태그를 가진 게시글 선택
+        if (lastTag === null || firstTag !== lastTag) {
+          shuffledPosts.push(post)
+          used.add(i)
+          lastTag = firstTag
+          found = true
+          break
+        }
+      }
+      
+      // 다른 태그를 가진 게시글이 없으면 아무거나 선택
+      if (!found) {
+        for (let i = 0; i < allPosts.length; i++) {
+          if (!used.has(i)) {
+            const post = allPosts[i]
+            shuffledPosts.push(post)
+            used.add(i)
+            const postTags = post.tags.map(t => t.tag.name)
+            lastTag = postTags[0] || '기타'
+            break
+          }
+        }
+      }
+      
+      attempts++
+    }
+    
+    const posts = shuffledPosts.slice(0, limit)
 
     // 각 게시글의 실제 댓글 수 조회
     const postsWithCommentCount = await Promise.all(

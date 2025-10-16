@@ -1,0 +1,395 @@
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+
+const popularPosts = [
+  // 디시인사이드 스타일
+  {
+    title: '월세 70만원인데 집주인이 100만원으로 올린다는데 어쩌죠?',
+    content: `제가 살고 있는 원룸 월세가 70만원인데 집주인이 다음 달부터 100만원으로 올리겠다고 하네요.
+    
+계약서를 보니 계약 기간이 아직 6개월 남았는데 이렇게 올려도 되는 건가요?
+법적으로 문제가 있는 건지 궁금해서 물어봅니다.
+
+아 그리고 보증금도 500만원에서 1000만원으로 올리겠다고 하네요.
+이건 너무 심한 거 아닌가요? 도와주세요 ㅠㅠ`,
+    nickname: '월세고민러',
+    password: '1234',
+    tags: ['자유', '월세인상', '분쟁사례'],
+    views: 234,
+    upvotes: 45,
+    downvotes: 3,
+    commentCount: 18
+  },
+  {
+    title: '집 구하는 게 너무 어렵네요...',
+    content: `부동산 다니면서 느낀 점인데 정말 집 구하는 게 힘들어요.
+    
+좋은 집은 너무 비싸고, 싼 집은 너무 낡았고...
+중간은 어디에 있는 건가요?
+
+특히 원룸 구하는 게 진짜 어렵네요.
+혹시 좋은 집 구하는 팁 있으면 공유해주세요!`,
+    nickname: '집구하기힘듦',
+    password: '1234',
+    tags: ['자유'],
+    views: 189,
+    upvotes: 32,
+    downvotes: 1,
+    commentCount: 12
+  },
+  {
+    title: '집주인이 갑자기 계약 해지하겠다고 해요',
+    content: `어제 갑자기 집주인이 전화와서 계약 해지하겠다고 하네요.
+이유는 친척이 들어온다고 해서 그런데...
+
+저는 계약 기간이 아직 1년 남았는데 이렇게 갑자기 해지할 수 있나요?
+이사비용도 내가 다 내야 하는 건가요?
+
+법적으로 어떤 권리가 있는지 알려주세요!`,
+    nickname: '계약해지당함',
+    password: '1234',
+    tags: ['자유', '계약해지'],
+    views: 156,
+    upvotes: 28,
+    downvotes: 2,
+    commentCount: 8
+  },
+  {
+    title: '보증금 반환 받는데 3개월 걸린다는게 말이 됨?',
+    content: `이사 갈 때 집주인이 보증금 반환하는데 3개월 걸린다고 하네요.
+이게 정상인가요?
+
+전 집주인은 2주 만에 다 줬는데 이 집주인은 왜 이렇게 오래 걸리는지...
+혹시 안 줄 생각인가요?
+
+보증금 1000만원인데 정말 걱정됩니다.
+어떻게 해야 할까요?`,
+    nickname: '보증금걱정',
+    password: '1234',
+    tags: ['자유', '보증금'],
+    views: 203,
+    upvotes: 38,
+    downvotes: 4,
+    commentCount: 15
+  },
+  
+  // MLB Park 스타일
+  {
+    title: '월세 협상 성공했습니다!',
+    content: `월세 협상 성공해서 여러분께 팁 공유드립니다!
+
+처음에 80만원이라고 했는데 70만원으로 깎았어요.
+방법은:
+1. 여러 집을 비교한다고 했습니다
+2. 다른 집은 더 싸다고 했습니다
+3. 장기 거주 의사를 밝혔습니다
+4. 보증금을 조금 더 내겠다고 했습니다
+
+이렇게 하니까 집주인이 10만원 깎아줬네요.
+도움 되셨으면 좋겠습니다!`,
+    nickname: '협상왕',
+    password: '1234',
+    tags: ['자유', '월세인상'],
+    views: 456,
+    upvotes: 67,
+    downvotes: 5,
+    commentCount: 25
+  },
+  {
+    title: '원룸 인테리어 비용 얼마나 들었는지 공유',
+    content: `제가 원룸 인테리어 한 비용 공유드립니다!
+
+- 벽지 교체: 50만원
+- 바닥 재시공: 80만원
+- 조명 교체: 30만원
+- 가구 구매: 150만원
+- 기타: 40만원
+
+총 350만원 정도 들었네요.
+
+특히 가구는 중고로 사서 많이 절약했습니다.
+중고 앱에서 싸게 구할 수 있어요!
+
+혹시 더 저렴하게 하는 방법 있으면 알려주세요.`,
+    nickname: '인테리어러버',
+    password: '1234',
+    tags: ['자유'],
+    views: 321,
+    upvotes: 52,
+    downvotes: 3,
+    commentCount: 20
+  },
+  {
+    title: '집주인과 싸우지 않고 문제 해결하는 법',
+    content: `집주인과 싸우지 않고 문제를 해결하는 팁 공유합니다!
+
+1. 먼저 차근차근 대화하세요
+2. 감정적으로 말하지 마세요
+3. 법적 근거를 제시하세요
+4. 중재 기관을 활용하세요
+5. 증거를 남기세요
+
+제가 이렇게 해서 월세 인상 문제를 해결했어요.
+참고하시면 좋을 것 같습니다!`,
+    nickname: '평화주의자',
+    password: '1234',
+    tags: ['자유', '집주인소통'],
+    views: 289,
+    upvotes: 48,
+    downvotes: 2,
+    commentCount: 17
+  },
+  
+  // FM코리아 스타일
+  {
+    title: '전세 사기 조심하세요!',
+    content: `전세 사기 당할 뻔한 경험 공유합니다.
+
+집주인이 전세금을 받고 도망가려고 했던 것 같아요.
+다행히 법무사 선생님이 도와주셔서 막았습니다.
+
+전세 사기 조심하는 방법:
+1. 집주인 신원 확인
+2. 부동산 등기부등본 확인
+3. 전세금을 직접 주지 말고 공인중개사 통해서
+4. 계약서를 꼼꼼히 확인
+
+여러분도 조심하세요!`,
+    nickname: '사기경험자',
+    password: '1234',
+    tags: ['자유', '분쟁사례'],
+    views: 567,
+    upvotes: 89,
+    downvotes: 2,
+    commentCount: 34
+  },
+  {
+    title: '원룸 구할 때 체크리스트',
+    content: `원룸 구할 때 이것만 체크하면 됩니다!
+
+[위치]
+- 지하철역 거리
+- 편의시설 접근성
+- 주변 소음
+
+[집 상태]
+- 수압 확인
+- 전기 콘센트 위치
+- 곰팡이 확인
+- 창문 단열
+
+[계약]
+- 계약서 내용 확인
+- 보증금 확인
+- 월세 확인
+- 관리비 확인
+
+[집주인]
+- 연락 잘 되는지
+- 성격 파악
+
+이거만 확인하면 됩니다!`,
+    nickname: '원룸고수',
+    password: '1234',
+    tags: ['자유', '입주체크'],
+    views: 678,
+    upvotes: 112,
+    downvotes: 3,
+    commentCount: 45
+  },
+  {
+    title: '월세 전환 전세로 바꾸는 게 나을까요?',
+    content: `현재 월세 70만원에 살고 있는데
+전세로 바꾸는 게 나을지 고민입니다.
+
+월세 70만원 × 12개월 = 840만원/년
+전세 1억이라고 하면...
+
+이자율을 고려하면 어떤 게 나을까요?
+전세로 바꾸는 게 나은 건가요?
+
+경험 있으신 분들 조언 부탁드립니다!`,
+    nickname: '월세전세고민',
+    password: '1234',
+    tags: ['자유', '부동산'],
+    views: 234,
+    upvotes: 35,
+    downvotes: 7,
+    commentCount: 18
+  },
+  {
+    title: '집주인이 수리 안 해주는데 어떻게 해야 하나요?',
+    content: `냉장고가 고장났는데 집주인이 수리 안 해주네요.
+"자기가 써서 고장난 거"라고 하면서요.
+
+이게 맞는 건가요?
+계약서에는 "고장나면 집주인이 수리한다"고 되어 있는데...
+
+법적으로 어떻게 해야 하나요?
+도와주세요!`,
+    nickname: '수리안됨',
+    password: '1234',
+    tags: ['자유', '분쟁사례'],
+    views: 189,
+    upvotes: 28,
+    downvotes: 4,
+    commentCount: 12
+  },
+  {
+    title: '계약 갱신 때 월세 인상 어느 정도가 적정한가요?',
+    content: `계약 갱신 때 월세를 인상하겠다고 하네요.
+현재 70만원인데 80만원으로 올리겠다고 해요.
+
+이 정도 인상이 적정한 건가요?
+아니면 너무 많이 올리는 건가요?
+
+시세를 확인해보니 비슷한 집이 75만원 정도인데
+80만원은 좀 비싼 것 같아서요.
+
+조언 부탁드립니다!`,
+    nickname: '월세인상고민',
+    password: '1234',
+    tags: ['자유', '월세인상'],
+    views: 145,
+    upvotes: 22,
+    downvotes: 5,
+    commentCount: 10
+  },
+  {
+    title: '전입신고 안 하면 어떻게 되나요?',
+    content: `이사 왔는데 전입신고를 안 했어요.
+이사 온 지 한 달 정도 됐는데...
+
+전입신고 안 하면 어떻게 되나요?
+벌금이나 불이익이 있나요?
+
+지금이라도 해야 하나요?
+알려주세요!`,
+    nickname: '전입신고안함',
+    password: '1234',
+    tags: ['자유'],
+    views: 98,
+    upvotes: 15,
+    downvotes: 2,
+    commentCount: 7
+  },
+  {
+    title: '보증금 반환 때 원상복구 해야 하나요?',
+    content: `이사 갈 때 집주인이 원상복구 하라고 하네요.
+제가 벽지 좀 바꾸고 장식 좀 했는데...
+
+이걸 다 원래대로 해야 하나요?
+아니면 집주인이 알아서 하면 되는 건가요?
+
+원상복구 비용이 얼마나 드는지도 궁금합니다.
+경험 있으신 분들 알려주세요!`,
+    nickname: '원상복구고민',
+    password: '1234',
+    tags: ['자유', '계약해지'],
+    views: 167,
+    upvotes: 31,
+    downvotes: 3,
+    commentCount: 13
+  },
+  {
+    title: '집주인이 계약서에 없는 조건 추가하려고 해요',
+    content: `계약 갱신할 때 집주인이
+"반려동물 키우면 안 된다"는 조건을 추가하려고 해요.
+
+근데 계약서에는 그런 내용이 없었는데
+이렇게 나중에 조건을 추가할 수 있나요?
+
+제가 강아지를 키우고 있어서 걱정됩니다.
+어떻게 해야 할까요?`,
+    nickname: '반려동물집주인',
+    password: '1234',
+    tags: ['자유', '계약'],
+    views: 134,
+    upvotes: 26,
+    downvotes: 6,
+    commentCount: 11
+  }
+]
+
+async function main() {
+  console.log('인기 게시글 추가 시작...')
+  
+  for (const postData of popularPosts) {
+    // slug 생성
+    const baseSlug = postData.title
+      .toLowerCase()
+      .replace(/[^a-z0-9가-힣]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
+      .substring(0, 100)
+    
+    let slug = baseSlug
+    let counter = 1
+    
+    // slug 중복 확인
+    while (true) {
+      const existing = await prisma.post.findUnique({
+        where: { slug }
+      })
+      
+      if (!existing) break
+      
+      slug = `${baseSlug}-${counter}`
+      counter++
+    }
+    
+    // 게시글 생성
+    const post = await prisma.post.create({
+      data: {
+        title: postData.title,
+        content: postData.content,
+        nickname: postData.nickname,
+        password: postData.password,
+        slug,
+        views: postData.views,
+        upvotes: postData.upvotes,
+        downvotes: postData.downvotes,
+        commentCount: postData.commentCount,
+        isHot: postData.upvotes > 50,
+        isNew: false,
+        isPopular: postData.upvotes > 30,
+        type: 'discussion'
+      }
+    })
+    
+    // 태그 연결
+    for (const tagName of postData.tags) {
+      let tag = await prisma.tag.findUnique({
+        where: { name: tagName }
+      })
+      
+      if (!tag) {
+        tag = await prisma.tag.create({
+          data: { name: tagName }
+        })
+      }
+      
+      await prisma.postTag.create({
+        data: {
+          postId: post.id,
+          tagId: tag.id
+        }
+      })
+    }
+    
+    console.log(`✓ ${postData.title}`)
+  }
+  
+  console.log('\n인기 게시글 추가 완료!')
+}
+
+main()
+  .catch((e) => {
+    console.error(e)
+    process.exit(1)
+  })
+  .finally(async () => {
+    await prisma.$disconnect()
+  })
+

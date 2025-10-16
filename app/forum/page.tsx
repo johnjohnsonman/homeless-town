@@ -28,6 +28,7 @@ interface Post {
   downvotes: number
   views: number
   comments: number
+  commentCount?: number
   tags: string[]
   marketTrend?: 'up' | 'down' | null
   isHot: boolean
@@ -559,7 +560,7 @@ export default function ForumPage() {
                         <div className="flex items-center space-x-4">
                           <span className="flex items-center">
                             <MessageSquare className="w-3 h-3 mr-1" />
-                            {post.comments}
+                            {post.commentCount !== undefined ? post.commentCount : post.comments}
                           </span>
                           <span className="flex items-center">
                             <ThumbsUp className="w-3 h-3 mr-1" />
