@@ -422,19 +422,6 @@ export default function ForumPage() {
                 >
                   전체
                 </button>
-                <button
-                  onClick={() => setSelectedTag('자유')}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                    selectedTag === '자유'
-                      ? 'bg-brand-accent text-white'
-                      : 'text-brand-ink hover:bg-brand-accent/10'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span>자유</span>
-                    <span className="text-xs opacity-70">{tags.find(t => t.name === '자유')?.count || 0}</span>
-                  </div>
-                </button>
                 {tags.map((tag) => (
                   <button
                     key={tag.name}
