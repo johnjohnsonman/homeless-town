@@ -488,23 +488,23 @@ export default function ForumPage() {
             </div>
 
             {/* Posts List */}
-            <div className="space-y-3">
+            <div className="space-y-1">
               {loading ? (
                 // Loading skeletons
                 Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="bg-brand-card rounded-2xl shadow-soft border border-brand-border p-4 animate-pulse">
-                    <div className="h-4 bg-brand-border rounded mb-2"></div>
+                  <div key={i} className="bg-brand-card rounded-lg shadow-sm border border-brand-border p-3 animate-pulse mb-2">
+                    <div className="h-4 bg-brand-border rounded mb-1"></div>
                     <div className="h-3 bg-brand-border rounded w-3/4"></div>
                   </div>
                 ))
               ) : (
                 posts.map((post) => (
-                  <div key={post.id} className="bg-brand-card rounded-2xl shadow-soft border border-brand-border hover:shadow-medium transition-all duration-200">
-                    <div className="p-4">
+                  <div key={post.id} className="bg-brand-card rounded-lg shadow-sm border border-brand-border hover:shadow-md transition-all duration-200 mb-2">
+                    <div className="p-3">
                       {/* Post Header */}
-                      <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-start justify-between mb-1">
                         <div className="flex-1 min-w-0">
-                          <Link href={`/discussions/${post.id}`} className="block hover:bg-brand-accent/5 rounded-lg p-2 -m-2 transition-colors">
+                          <Link href={`/discussions/${post.id}`} className="block hover:bg-brand-accent/5 rounded-lg p-1 -m-1 transition-colors">
                             <div className="flex items-center space-x-2 mb-1">
                               <h3 className="text-sm font-semibold text-brand-ink hover:text-brand-accent transition-colors">
                                 {post.title}
@@ -520,7 +520,7 @@ export default function ForumPage() {
         </div>
 
                             {/* Tags */}
-                            <div className="flex items-center space-x-1 mb-2">
+                            <div className="flex items-center space-x-1 mb-1">
                               {post.tags.slice(0, 3).map((tag) => (
                                 <span
                                   key={tag}
@@ -546,8 +546,8 @@ export default function ForumPage() {
                       </div>
 
                       {/* Post Meta */}
-                      <div className="flex items-center justify-between text-xs text-brand-muted">
-                        <div className="flex items-center space-x-4">
+                      <div className="flex items-center justify-between text-xs text-brand-muted mt-1">
+                        <div className="flex items-center space-x-3">
                           <span className="flex items-center">
                             <MessageSquare className="w-3 h-3 mr-1" />
                             {post.commentCount !== undefined ? post.commentCount : post.comments}
@@ -570,32 +570,6 @@ export default function ForumPage() {
                         </div>
                       </div>
                       
-                      {/* Vote Buttons */}
-                      <div className="flex items-center justify-center space-x-4 mt-3 pt-3 border-t border-brand-border">
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            handleVote(post.id, 'like')
-                          }}
-                          className="flex items-center space-x-1 px-3 py-1 text-xs bg-brand-surface text-brand-muted rounded-lg hover:bg-brand-accent hover:text-white transition-colors"
-                        >
-                          <ThumbsUp className="w-3 h-3" />
-                          <span>공감 {post.upvotes}</span>
-                        </button>
-                        
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            handleVote(post.id, 'dislike')
-                          }}
-                          className="flex items-center space-x-1 px-3 py-1 text-xs bg-brand-surface text-brand-muted rounded-lg hover:bg-red-500 hover:text-white transition-colors"
-                        >
-                          <ThumbsDown className="w-3 h-3" />
-                          <span>비공감 {post.downvotes}</span>
-                        </button>
-                      </div>
                     </div>
                   </div>
                 ))
