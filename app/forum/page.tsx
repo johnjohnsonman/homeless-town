@@ -498,7 +498,7 @@ export default function ForumPage() {
                   </div>
                 ))
               ) : (
-                currentPosts.map((post) => (
+                posts.map((post) => (
                   <div key={post.id} className="bg-brand-card rounded-2xl shadow-soft border border-brand-border hover:shadow-medium transition-all duration-200">
                     <div className="p-4">
                       {/* Post Header */}
