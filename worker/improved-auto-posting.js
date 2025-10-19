@@ -15,20 +15,8 @@ const authorPool = [
   '인간만남', '위로받고싶어요', '계획러', '탈출성공자', '미래설계자'
 ];
 
-// 자연스러운 토론 주제 템플릿
+// 자연스러운 토론 주제 템플릿 (12개 카테고리로 확장)
 const discussionTemplates = {
-  자유: [
-    { title: '무주택촌에서 살아가는 팁 좀 알려주세요', style: 'question' },
-    { title: '아 진짜 힘들다... 누군가 들어줄 사람 없나요?', style: 'dc' },
-    { title: '무료 식당 정보 공유합니다!', style: 'info' },
-    { title: '오늘 뭐 먹지? ㅋㅋㅋ', style: 'dc' },
-    { title: '2025년 전세 시장 전망 어떻게 보시나요?', style: 'question' },
-    { title: '월세 vs 전세 어떤 게 나을까요?', style: 'question' },
-    { title: '부동산 중개수수료 절약 꿀팁 공유합니다', style: 'info' },
-    { title: '계약서 작성 시 꼭 확인해야 할 사항들', style: 'info' },
-    { title: '보증금 반환 받았던 경험 공유해요', style: 'case' },
-    { title: '집주인과 갈등 해결한 사례 있으신가요?', style: 'question' }
-  ],
   시황: [
     { title: '2025년 전세 시장 전망 어떻게 보시나요?', style: 'question' },
     { title: '월세 상승세 언제 끝날까요?', style: 'question' },
@@ -37,7 +25,21 @@ const discussionTemplates = {
     { title: '부동산 시장 동향 분석 자료 공유합니다', style: 'info' },
     { title: '전세 시장 침체 원인과 전망', style: 'info' },
     { title: '부동산 투자 타이밍 어떻게 생각하세요?', style: 'question' },
-    { title: '월세 상승이 계속되는 이유', style: 'info' }
+    { title: '월세 상승이 계속되는 이유', style: 'info' },
+    { title: '부동산 시장 개미치네 진짜', style: 'dc' },
+    { title: '지금이 계약하기 좋은 타이밍일까?', style: 'question' }
+  ],
+  자유: [
+    { title: '무주택촌에서 살아가는 팁 좀 알려주세요', style: 'question' },
+    { title: '아 진짜 힘들다... 누군가 들어줄 사람 없나요?', style: 'dc' },
+    { title: '무료 식당 정보 공유합니다!', style: 'info' },
+    { title: '오늘 뭐 먹지? ㅋㅋㅋ', style: 'dc' },
+    { title: '월세 vs 전세 어떤 게 나을까요?', style: 'question' },
+    { title: '부동산 중개수수료 절약 꿀팁 공유합니다', style: 'info' },
+    { title: '계약서 작성 시 꼭 확인해야 할 사항들', style: 'info' },
+    { title: '보증금 반환 받았던 경험 공유해요', style: 'case' },
+    { title: '집주인과 갈등 해결한 사례 있으신가요?', style: 'question' },
+    { title: '원룸 구하기 개빡세네 ㅠㅠ', style: 'dc' }
   ],
   부동산시장: [
     { title: '아파트 vs 오피스텔 진짜 고민이에요', style: 'question' },
@@ -47,7 +49,9 @@ const discussionTemplates = {
     { title: '부동산 계약 전 체크리스트 알려주세요', style: 'question' },
     { title: '부동산 중개사 선택 팁 공유합니다', style: 'info' },
     { title: '매물 사기 당한 경험 있으신가요?', style: 'question' },
-    { title: '부동산 투자 성공 사례 공유해요', style: 'case' }
+    { title: '부동산 투자 성공 사례 공유해요', style: 'case' },
+    { title: '아파트 오피스텔 뭐가 나을까?', style: 'question' },
+    { title: '중개비 너무 비싸서 미치겠어', style: 'dc' }
   ],
   임대시장: [
     { title: '월세 협상 성공했어요! 후기 올려요', style: 'case' },
@@ -57,7 +61,9 @@ const discussionTemplates = {
     { title: '임대인과의 소통 팁', style: 'info' },
     { title: '월세 협상 꿀팁 공유합니다', style: 'info' },
     { title: '전세 전환 시 유의사항', style: 'info' },
-    { title: '임대차 계약 갱신 시 주의사항', style: 'info' }
+    { title: '임대차 계약 갱신 시 주의사항', style: 'info' },
+    { title: '월세 협상 어떻게 해야 함?', style: 'question' },
+    { title: '집주인이랑 어떻게 대화해야 함?', style: 'question' }
   ],
   분쟁사례: [
     { title: '보증금 반환 거부 당했어요 도와주세요', style: 'question' },
@@ -67,7 +73,9 @@ const discussionTemplates = {
     { title: '계약 해지 관련 분쟁 해결 방법', style: 'info' },
     { title: '집주인과 분쟁 해결한 사례 공유해요', style: 'case' },
     { title: '보증금 분쟁 법률 상담 받은 경험', style: 'case' },
-    { title: '월세 인상 분쟁 어떻게 해결하셨나요?', style: 'question' }
+    { title: '월세 인상 분쟁 어떻게 해결하셨나요?', style: 'question' },
+    { title: '보증금 안 돌려준다고 개빡쳐', style: 'dc' },
+    { title: '집주인하고 싸웠는데 어떻게 해결함?', style: 'question' }
   ],
   보증금: [
     { title: '보증금 반환 받는 꿀팁 공유해요', style: 'info' },
@@ -77,7 +85,9 @@ const discussionTemplates = {
     { title: '보증금 관련 법적 권리', style: 'info' },
     { title: '보증금 반환 거부 당했을 때 대처법', style: 'info' },
     { title: '보증금 반환 성공 사례 공유합니다', style: 'case' },
-    { title: '보증금 대출 한도 얼마나 되나요?', style: 'question' }
+    { title: '보증금 대출 한도 얼마나 되나요?', style: 'question' },
+    { title: '보증금 돌려받기 개힘들어', style: 'dc' },
+    { title: '보증금 어떻게 활용함?', style: 'question' }
   ],
   월세인상: [
     { title: '월세 인상률 진짜 미쳤어요', style: 'dc' },
@@ -87,7 +97,9 @@ const discussionTemplates = {
     { title: '월세 vs 전세 전환 고민', style: 'question' },
     { title: '월세 인상 거부할 수 있나요?', style: 'question' },
     { title: '월세 협상 꿀팁 공유합니다', style: 'info' },
-    { title: '월세 인상 제한 조항 활용 사례', style: 'case' }
+    { title: '월세 인상 제한 조항 활용 사례', style: 'case' },
+    { title: '월세 올린다고 갑자기 통보함 ㅡㅡ', style: 'dc' },
+    { title: '월세 전세 전환 고민되네', style: 'question' }
   ],
   계약해지: [
     { title: '임대차 계약 해지 절차 알려주세요', style: 'question' },
@@ -97,7 +109,57 @@ const discussionTemplates = {
     { title: '계약 해지 관련 법적 문제', style: 'info' },
     { title: '계약 해지 시 보증금 반환은?', style: 'question' },
     { title: '계약 해지 후 이사 경험 공유해요', style: 'case' },
-    { title: '갑작스러운 퇴거 요구 당한 분 있나요?', style: 'question' }
+    { title: '갑작스러운 퇴거 요구 당한 분 있나요?', style: 'question' },
+    { title: '계약 해지 절차 개복잡해', style: 'dc' },
+    { title: '계약 해지하고 이사 준비 어떻게 함?', style: 'question' }
+  ],
+  입주체크: [
+    { title: '입주 전 꼭 확인해야 할 체크리스트', style: 'info' },
+    { title: '전세/월세 계약 전 필수 확인사항', style: 'info' },
+    { title: '부동산 중개업소 선택 가이드', style: 'info' },
+    { title: '임대차 계약서 검토 포인트', style: 'info' },
+    { title: '입주 전 점검해야 할 시설들', style: 'info' },
+    { title: '전세금 반환 보장 방법', style: 'info' },
+    { title: '입주 시 주의사항과 팁', style: 'info' },
+    { title: '계약 전 체크리스트 알려주세요', style: 'question' },
+    { title: '입주할 때 뭘 확인해야 함?', style: 'question' },
+    { title: '부동산 중개사 어떻게 선택함?', style: 'question' }
+  ],
+  집주인소통: [
+    { title: '집주인과의 원활한 소통 방법', style: 'info' },
+    { title: '월세 협상 시 집주인과의 대화법', style: 'info' },
+    { title: '집주인과 갈등 해결하는 방법', style: 'info' },
+    { title: '집주인에게 요구사항 전달하는 법', style: 'info' },
+    { title: '집주인과의 관계 유지 팁', style: 'info' },
+    { title: '집주인과의 소통 시 주의사항', style: 'info' },
+    { title: '집주인과 친해지는 방법', style: 'info' },
+    { title: '집주인이랑 어떻게 대화해야 함?', style: 'question' },
+    { title: '집주인과 갈등 생겼을 때 해결법', style: 'question' },
+    { title: '집주인한테 요구사항 어떻게 말함?', style: 'question' }
+  ],
+  투자: [
+    { title: '부동산 투자 성공 전략', style: 'info' },
+    { title: '소액 부동산 투자 방법', style: 'info' },
+    { title: '전세 투자 시 주의사항', style: 'info' },
+    { title: '부동산 투자 타이밍 분석', style: 'info' },
+    { title: '투자용 부동산 선택 기준', style: 'info' },
+    { title: '부동산 투자 리스크 관리', style: 'info' },
+    { title: '부동산 투자 수익률 계산법', style: 'info' },
+    { title: '부동산 투자 어떻게 시작함?', style: 'question' },
+    { title: '소액으로도 부동산 투자 가능함?', style: 'question' },
+    { title: '투자용 부동산 뭐가 좋음?', style: 'question' }
+  ],
+  정책: [
+    { title: '청년 전세대출 지원 정책 변화', style: 'info' },
+    { title: '임대차 3법 주요 개정사항', style: 'info' },
+    { title: '공공임대주택 신청 조건과 절차', style: 'info' },
+    { title: '전세자금대출 금리 인하 소식', style: 'info' },
+    { title: '임대사업자 등록 의무화', style: 'info' },
+    { title: '주거급여 신청 방법과 조건', style: 'info' },
+    { title: '정부 주거 지원 정책 안내', style: 'info' },
+    { title: '청년 전세대출 어떻게 신청함?', style: 'question' },
+    { title: '공공임대주택 신청 조건이 뭐임?', style: 'question' },
+    { title: '주거급여 받을 수 있는 조건이 뭐임?', style: 'question' }
   ]
 };
 

@@ -76,8 +76,10 @@ export default function ForumPage() {
   const [selectedTag, setSelectedTag] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalPosts, setTotalPosts] = useState(0)
   const [loading, setLoading] = useState(true)
-  const postsPerPage = 10
+  const postsPerPage = 25
 
   // 실제 API 데이터 사용
   // API에서 데이터 가져오기
@@ -89,6 +91,10 @@ export default function ForumPage() {
         const data = await response.json()
         if (data.discussions) {
           setPosts(data.discussions)
+        }
+        if (data.total !== undefined) {
+          setTotalPosts(data.total)
+          setTotalPages(Math.ceil(data.total / postsPerPage))
         }
       } catch (error) {
         console.error('Failed to fetch posts:', error)
@@ -651,7 +657,7 @@ export default function ForumPage() {
 
             {/* Page Info */}
             <div className="mt-4 text-center text-sm text-brand-muted">
-              총 {posts.length}개의 토론글 중 {startIndex + 1}-{Math.min(endIndex, posts.length)}번째를 보고 있습니다
+              총 {totalPosts}개의 토론글 중 {(currentPage - 1) * postsPerPage + 1}-{Math.min(currentPage * postsPerPage, totalPosts)}번째를 보고 있습니다
             </div>
           </div>
 
