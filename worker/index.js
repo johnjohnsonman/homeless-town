@@ -2,6 +2,16 @@
 const { Queue, Worker } = require('bullmq');
 const IORedis = require('ioredis');
 const OpenAI = require('openai');
+const axios = require('axios');
+
+// OpenAI 클라이언트 초기화
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+// 뉴스 API 설정
+const NEWS_API_KEY = process.env.NEWS_API_KEY || 'your-news-api-key';
+const NEWS_API_URL = 'https://newsapi.org/v2/everything';
 
 // 다양한 사용자 닉네임 목록
 const diverseAuthors = [
@@ -84,6 +94,133 @@ function getTagsForCategory(category) {
   };
   
   return tagMap[category] || [category];
+}
+
+// 최신 부동산 뉴스 가져오기
+async function fetchRealEstateNews() {
+  try {
+    const response = await axios.get(NEWS_API_URL, {
+      params: {
+        q: '부동산 OR 전세 OR 월세 OR 임대차 OR 주택',
+        language: 'ko',
+        sortBy: 'publishedAt',
+        pageSize: 10,
+        apiKey: NEWS_API_KEY
+      }
+    });
+    
+    return response.data.articles || [];
+  } catch (error) {
+    console.log('뉴스 API 오류:', error.message);
+    return [];
+  }
+}
+
+// 뉴스 기반 토론글 생성
+async function generateNewsBasedPost(newsItem) {
+  try {
+    const prompt = `
+다음 부동산 뉴스를 바탕으로 무주택촌 커뮤니티 토론글을 작성해주세요:
+
+뉴스 제목: ${newsItem.title}
+뉴스 내용: ${newsItem.description || newsItem.content || ''}
+
+요구사항:
+1. 제목은 30자 이내로 작성 (뉴스 내용을 바탕으로 하지만 직접적인 뉴스 제목이 아닌 토론 주제로)
+2. 내용은 200-400자 정도로 작성
+3. 실제 무주택자/전세자/월세자의 관점에서 작성
+4. 다른 사용자들이 댓글을 달고 싶어할 만한 질문이나 의견 요청 포함
+5. 친근하고 공감대를 형성할 수 있는 톤으로 작성
+6. 한국어로 작성
+7. 이모지는 사용하지 마세요
+8. 뉴스 내용을 바탕으로 하지만 개인적인 경험이나 의견을 포함
+
+응답 형식:
+제목: [제목]
+내용: [내용]
+태그: [태그1,태그2]
+`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 600,
+      temperature: 0.8,
+    });
+
+    const response = completion.choices[0]?.message?.content || '';
+    
+    // 응답 파싱
+    const titleMatch = response.match(/제목:\s*(.+)/);
+    const contentMatch = response.match(/내용:\s*([\s\S]+?)(?=태그:|$)/);
+    const tagsMatch = response.match(/태그:\s*(.+)/);
+    
+    const title = titleMatch?.[1]?.trim() || newsItem.title;
+    const content = contentMatch?.[1]?.trim() || '';
+    const tags = tagsMatch?.[1]?.split(',').map(t => t.trim()) || ['시황'];
+
+    return { title, content, tags };
+  } catch (error) {
+    console.log('OpenAI 뉴스 기반 글 생성 오류:', error.message);
+    return {
+      title: `${newsItem.title}에 대해 어떻게 생각하시나요?`,
+      content: `${newsItem.title} 뉴스를 보니 정말 걱정이 되네요. 여러분은 어떻게 생각하시나요? 실제 경험담이나 의견이 있으시면 댓글로 공유해주세요!`,
+      tags: ['시황']
+    };
+  }
+}
+
+// AI 기반 자연스러운 댓글 생성
+async function generateAIComment(postContent, postTitle, commentCount = 3) {
+  try {
+    const prompt = `
+다음 토론글에 대한 자연스러운 댓글 ${commentCount}개를 작성해주세요:
+
+제목: ${postTitle}
+내용: ${postContent}
+
+요구사항:
+1. 각 댓글은 20-80자 정도로 작성
+2. 실제 무주택자/전세자/월세자의 관점에서 작성
+3. 다양한 의견과 경험담을 포함
+4. 친근하고 자연스러운 톤으로 작성
+5. 한국어로 작성
+6. 이모지는 사용하지 마세요
+7. 각 댓글은 서로 다른 관점이나 경험을 반영
+
+응답 형식:
+댓글1: [내용]
+댓글2: [내용]
+댓글3: [내용]
+`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 400,
+      temperature: 0.9,
+    });
+
+    const response = completion.choices[0]?.message?.content || '';
+    
+    // 댓글 파싱
+    const comments = [];
+    for (let i = 1; i <= commentCount; i++) {
+      const commentMatch = response.match(new RegExp(`댓글${i}:\\s*(.+?)(?=댓글${i+1}:|$)`));
+      if (commentMatch) {
+        comments.push(commentMatch[1].trim());
+      }
+    }
+    
+    return comments.filter(comment => comment.length > 0);
+  } catch (error) {
+    console.log('AI 댓글 생성 오류:', error.message);
+    return [
+      '정말 공감되는 글이네요',
+      '저도 비슷한 경험이 있어요',
+      '좋은 정보 감사합니다'
+    ];
+  }
 }
 
 // 토론 주제 템플릿 (12개 카테고리로 확장)
@@ -418,57 +555,207 @@ function generateFallbackContent(category, title) {
   return randomContent;
 }
 
+// AI 기반 게시글 생성
+async function createPostWithAI(postData) {
+  try {
+    const response = await fetch(`${process.env.SITE_BASE_URL || 'https://homeless-town.onrender.com'}/api/discussions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title: postData.title,
+        content: postData.content,
+        tags: postData.tags || ['시황'],
+        nickname: diverseAuthors[Math.floor(Math.random() * diverseAuthors.length)],
+        password: 'ai123',
+        marketTrend: Math.random() > 0.5 ? 'up' : 'down'
+      }),
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      console.log(`✅ AI 게시글 생성 성공: ${postData.title}`);
+      return result.id || true;
+    } else {
+      const errorText = await response.text();
+      console.log(`❌ AI 게시글 생성 실패: ${postData.title} - ${errorText}`);
+      return false;
+    }
+  } catch (error) {
+    console.log(`❌ AI 게시글 생성 오류: ${postData.title} - ${error.message}`);
+    return false;
+  }
+}
+
+// AI 기반 댓글 생성
+async function createAIComments(postId, postTitle, postContent) {
+  try {
+    const comments = await generateAIComment(postContent, postTitle, 3);
+    
+    for (const commentContent of comments) {
+      await fetch(`${process.env.SITE_BASE_URL || 'https://homeless-town.onrender.com'}/api/discussions/${postId}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: commentContent,
+          nickname: diverseAuthors[Math.floor(Math.random() * diverseAuthors.length)],
+          password: 'ai123'
+        }),
+      });
+      
+      // 댓글 간 간격
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    
+    console.log(`💬 AI 댓글 ${comments.length}개 생성 완료`);
+  } catch (error) {
+    console.log(`❌ AI 댓글 생성 오류: ${error.message}`);
+  }
+}
+
+// AI로 템플릿 기반 글을 자연스럽게 향상
+async function generateAIEnhancedPost(template, category) {
+  try {
+    const prompt = `
+다음 주제를 바탕으로 무주택촌 커뮤니티 토론글을 작성해주세요:
+
+주제: ${template}
+카테고리: ${category}
+
+요구사항:
+1. 제목은 30자 이내로 작성
+2. 내용은 200-400자 정도로 작성
+3. 실제 무주택자/전세자/월세자의 관점에서 작성
+4. 구체적인 경험이나 상황을 포함
+5. 다른 사용자들이 댓글을 달고 싶어할 만한 질문이나 의견 요청 포함
+6. 친근하고 공감대를 형성할 수 있는 톤으로 작성
+7. 한국어로 작성
+8. 이모지는 사용하지 마세요
+9. 자연스럽고 실제 사용자가 쓴 것처럼 작성
+
+응답 형식:
+제목: [제목]
+내용: [내용]
+태그: [태그1,태그2]
+`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 600,
+      temperature: 0.8,
+    });
+
+    const response = completion.choices[0]?.message?.content || '';
+    
+    // 응답 파싱
+    const titleMatch = response.match(/제목:\s*(.+)/);
+    const contentMatch = response.match(/내용:\s*([\s\S]+?)(?=태그:|$)/);
+    const tagsMatch = response.match(/태그:\s*(.+)/);
+    
+    const title = titleMatch?.[1]?.trim() || template;
+    const content = contentMatch?.[1]?.trim() || '';
+    const tags = tagsMatch?.[1]?.split(',').map(t => t.trim()) || getTagsForCategory(category);
+
+    return { title, content, tags };
+  } catch (error) {
+    console.log('AI 템플릿 향상 오류:', error.message);
+    return {
+      title: template,
+      content: `${template}에 대해 어떻게 생각하시나요? 실제 경험담이나 조언이 있으시면 댓글로 공유해주세요!`,
+      tags: getTagsForCategory(category)
+    };
+  }
+}
+
 // 오늘 자동 글 등록
 async function enqueueToday() {
   if (!postQueue) {
     console.log('⚠️ Redis가 연결되지 않아 즉시 실행 모드로 전환');
     
-    // Redis 없이 즉시 실행
-    const categories = Object.keys(discussionTemplates);
-    const TARGET_PER_CAT = Math.floor(160 / categories.length);
+    console.log('🚀 개선된 자동 포스팅 시작 (뉴스 기반 + AI 생성)...');
     
-    console.log(`🚀 ${categories.length}개 카테고리에 총 ${TARGET_PER_CAT * categories.length}개 게시글 즉시 생성 시작`);
+    // 뉴스 기반 포스팅 먼저 시도
+    let newsBasedPosts = 0;
+    try {
+      console.log('📰 최신 부동산 뉴스 가져오는 중...');
+      const newsItems = await fetchRealEstateNews();
+      
+      if (newsItems.length > 0) {
+        console.log(`📰 ${newsItems.length}개의 부동산 뉴스를 찾았습니다.`);
+        
+        // 최신 뉴스 3개로 토론글 생성
+        const selectedNews = newsItems.slice(0, 3);
+        
+        for (const newsItem of selectedNews) {
+          const newsPost = await generateNewsBasedPost(newsItem);
+          console.log(`📰 뉴스 기반 토론글 생성: ${newsPost.title}`);
+          
+          const success = await createPostWithAI(newsPost);
+          if (success) {
+            newsBasedPosts++;
+            console.log(`✅ 뉴스 기반 포스팅 성공: ${newsPost.title}`);
+            
+            // AI 댓글도 생성
+            await createAIComments(success, newsPost.title, newsPost.content);
+          } else {
+            console.log(`❌ 뉴스 기반 포스팅 실패: ${newsPost.title}`);
+          }
+          
+          // 포스팅 간 간격
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+      } else {
+        console.log('📰 부동산 뉴스를 찾을 수 없습니다. 일반 포스팅으로 진행합니다.');
+      }
+    } catch (error) {
+      console.log('📰 뉴스 API 오류:', error.message);
+      console.log('📰 일반 포스팅으로 진행합니다.');
+    }
+    
+    // 기존 템플릿 기반 포스팅 (뉴스 기반이 부족할 경우)
+    const categories = Object.keys(discussionTemplates);
+    const remainingPosts = Math.max(0, 5 - newsBasedPosts); // 총 5개 목표
+    
+    console.log(`📝 템플릿 기반 포스팅 ${remainingPosts}개 추가 생성`);
 
-    for (const category of categories) {
+    for (let i = 0; i < remainingPosts; i++) {
+      const category = categories[Math.floor(Math.random() * categories.length)];
       const templates = discussionTemplates[category];
       
-      for (let i = 0; i < Math.min(TARGET_PER_CAT, 3); i++) { // 테스트용으로 3개만
-        let title;
-        let postType;
+      // 템플릿에서 랜덤하게 선택
+      const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
+      
+      // AI로 자연스러운 글 생성
+      const aiPost = await generateAIEnhancedPost(randomTemplate, category);
+      
+      console.log(`🤖 AI 향상된 템플릿 기반 글 생성: ${aiPost.title}`);
+      
+      const success = await createPostWithAI(aiPost);
+      if (success) {
+        console.log(`✅ AI 템플릿 기반 포스팅 성공: ${aiPost.title}`);
         
-        // 질문과 정보글을 1:1 비율로 생성
-        if (i % 2 === 0) {
-          postType = '질문';
-        } else {
-          postType = '정보';
-        }
-        
-        // 반말과 존댓말을 랜덤하게 선택 (50:50)
-        const usePolite = Math.random() < 0.5;
-        
-        // 모든 템플릿을 랜덤하게 섞어서 사용
-        const shuffledTemplates = [...templates].sort(() => Math.random() - 0.5);
-        const baseTemplate = shuffledTemplates[i % shuffledTemplates.length];
-        
-        // 제목에 유형별 접미사 추가
-        const questionSuffixes = ['?', ' 궁금해요', ' 어떻게 해야 할까요?', ' 조언 구해요', ' 도움 부탁드려요'];
-        const infoSuffixes = [' 꿀팁', ' 경험담 공유', ' 정보 공유', ' 후기', ' 팁 공유'];
-        
-        const randomSuffix = postType === '질문'
-          ? questionSuffixes[Math.floor(Math.random() * questionSuffixes.length)]
-          : infoSuffixes[Math.floor(Math.random() * infoSuffixes.length)];
-        
-        title = `[${category}] ${baseTemplate}${randomSuffix}`;
-
-        const content = await generateRealisticContent(category, title, postType, usePolite);
-        const author = diverseAuthors[Math.floor(Math.random() * diverseAuthors.length)];
-        
-        console.log(`📝 게시글 유형: ${postType} | 말투: ${usePolite ? '존댓말' : '반말'}`);
-        
-        try {
-          console.log(`📢 게시글 생성 시도: ${title}`);
-          console.log(`🔗 API URL: ${process.env.SITE_BASE_URL}/api/admin/posts`);
-          console.log(`🔑 Admin Token: ${process.env.ADMIN_TOKEN ? '설정됨' : '설정되지 않음'}`);
+        // AI 댓글도 생성
+        await createAIComments(success, aiPost.title, aiPost.content);
+      } else {
+        console.log(`❌ AI 템플릿 기반 포스팅 실패: ${aiPost.title}`);
+      }
+      
+      // 포스팅 간 간격
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+    
+    console.log(`🎉 자동 포스팅 완료! 뉴스 기반: ${newsBasedPosts}개, 템플릿 기반: ${remainingPosts}개`);
+    
+    return;
+  }
+  
+  // Redis가 있는 경우의 기존 로직 (간소화)
+  try {
+    console.log('📝 Redis 큐에 작업 추가 중...');
           
           const res = await fetch(`${process.env.SITE_BASE_URL}/api/admin/posts`, {
             method: 'POST',
