@@ -66,6 +66,26 @@ if (connection && postQueue) {
   );
 }
 
+// 카테고리에 맞는 태그들을 반환하는 함수
+function getTagsForCategory(category) {
+  const tagMap = {
+    '시황': ['시황', '부동산시장'],
+    '자유': ['자유', '일상'],
+    '부동산시장': ['부동산시장', '부동산'],
+    '임대시장': ['임대시장', '월세인상'],
+    '분쟁사례': ['분쟁사례', '법적권리'],
+    '보증금': ['보증금', '계약해지'],
+    '월세인상': ['월세인상', '집주인소통'],
+    '계약해지': ['계약해지', '안전수칙'],
+    '입주체크': ['입주체크', '안전수칙'],
+    '집주인소통': ['집주인소통', '법적권리'],
+    '투자': ['투자', '정책'],
+    '정책': ['정책', '법적권리']
+  };
+  
+  return tagMap[category] || [category];
+}
+
 // 토론 주제 템플릿 (12개 카테고리로 확장)
 const discussionTemplates = {
   시황: [
@@ -461,7 +481,7 @@ async function enqueueToday() {
               content,
               categorySlug: category,
               status: 'published',
-              tags: [category], // 카테고리를 태그로 사용
+              tags: getTagsForCategory(category), // 카테고리에 맞는 태그들 사용
               author: diverseAuthors[Math.floor(Math.random() * diverseAuthors.length)],
             }),
           });
