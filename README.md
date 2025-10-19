@@ -5,7 +5,8 @@
 ## 🤖 자동 포스팅 시스템
 - BullMQ와 Redis를 사용한 백그라운드 작업
 - 매일 20개의 토론 게시글 자동 생성
-- 8개 카테고리별 다양한 콘텐츠
+- 12개 카테고리별 다양한 콘텐츠
+- **실시간 부동산 뉴스 기반 토론글 생성** (NEW!)
 
 ## 📖 프로젝트 소개
 
@@ -88,6 +89,7 @@ cp .env.example .env
 # .env 파일 수정 (필요에 따라)
 # DATABASE_URL="file:./prisma/dev.db"  # 개발용 SQLite
 # OPENAI_API_KEY="your-openai-api-key"  # AI 게시글 생성용
+# NEWS_API_KEY="your-news-api-key"  # 실시간 뉴스 기반 토론글 생성용 (선택사항)
 # CRON_SECRET="your-secure-secret"  # 자동 스케줄링용
 ```
 

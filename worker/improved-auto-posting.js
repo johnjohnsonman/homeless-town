@@ -1,7 +1,140 @@
-// 개선된 자동 포스팅 시스템
+// 개선된 자동 포스팅 시스템 (뉴스 기반 업그레이드)
 const express = require('express');
+const axios = require('axios');
 
 const app = express();
+
+// 뉴스 API 설정
+const NEWS_API_KEY = process.env.NEWS_API_KEY || 'your-news-api-key';
+const NEWS_API_URL = 'https://newsapi.org/v2/everything';
+
+// 뉴스 기반 토론글 생성 함수
+async function fetchRealEstateNews() {
+  try {
+    const response = await axios.get(NEWS_API_URL, {
+      params: {
+        q: '부동산 OR 전세 OR 월세 OR 임대차 OR 주택',
+        language: 'ko',
+        sortBy: 'publishedAt',
+        pageSize: 10,
+        apiKey: NEWS_API_KEY
+      }
+    });
+
+    if (response.data && response.data.articles) {
+      return response.data.articles.map(article => ({
+        title: article.title,
+        description: article.description,
+        url: article.url,
+        publishedAt: article.publishedAt,
+        source: article.source.name
+      }));
+    }
+    return [];
+  } catch (error) {
+    console.error('뉴스 API 오류:', error.message);
+    return [];
+  }
+}
+
+// 뉴스 기반 토론글 생성
+function generateNewsBasedPost(newsItem) {
+  const newsTitle = newsItem.title;
+  const newsDescription = newsItem.description || '';
+  
+  // 뉴스 제목에서 키워드 추출
+  const keywords = extractKeywords(newsTitle);
+  const category = categorizeNews(keywords);
+  
+  // 뉴스 기반 토론글 제목 생성
+  const discussionTitles = [
+    `${newsTitle} 관련해서 어떻게 생각하세요?`,
+    `${newsTitle} 이거 진짜 맞나요?`,
+    `${newsTitle} 이 정책이 우리한테 어떤 영향일까요?`,
+    `${newsTitle} 이거 보니까 걱정되네요`,
+    `${newsTitle} 이거 어떻게 대처해야 할까요?`,
+    `${newsTitle} 이거 정말 실현될까요?`,
+    `${newsTitle} 이거 우리한테 도움될까요?`,
+    `${newsTitle} 이거 보니까 전세 시장이 더 어려워질 것 같아요`,
+    `${newsTitle} 이거 정말 필요한 정책인가요?`,
+    `${newsTitle} 이거로 인해 월세가 더 오를까요?`
+  ];
+  
+  const selectedTitle = discussionTitles[Math.floor(Math.random() * discussionTitles.length)];
+  
+  // 뉴스 기반 내용 생성
+  const contentTemplates = [
+    `오늘 뉴스에서 "${newsTitle}" 이라는 기사를 봤는데요.\n\n${newsDescription}\n\n이거 정말 걱정되네요. 우리 같은 무주택자들에게 어떤 영향이 있을까요?\n\n혹시 관련해서 아시는 분 있으시면 조언 부탁드려요!`,
+    
+    `"${newsTitle}" 이 기사 보셨나요?\n\n${newsDescription}\n\n이거 보니까 정말 불안해지네요. 전세 시장이 더 어려워질 것 같은데...\n\n여러분은 어떻게 생각하세요?`,
+    
+    `뉴스에서 "${newsTitle}" 이라고 나왔는데요.\n\n${newsDescription}\n\n이거 정말 실현되면 우리한테 어떤 영향이 있을까요? 월세가 더 오를까요?\n\n걱정되네요...`,
+    
+    `"${newsTitle}" 이 기사 보니까 정말 화나네요.\n\n${newsDescription}\n\n이런 정책들이 계속 나오면 우리는 언제 집을 살 수 있을까요?\n\n여러분도 같은 생각이시죠?`,
+    
+    `오늘 "${newsTitle}" 이라는 뉴스를 봤는데요.\n\n${newsDescription}\n\n이거 정말 필요한 정책인가요? 아니면 또 다른 부작용이 생길까요?\n\n걱정되네요...`
+  ];
+  
+  const selectedContent = contentTemplates[Math.floor(Math.random() * contentTemplates.length)];
+  
+  return {
+    title: selectedTitle,
+    content: selectedContent,
+    category: category,
+    tags: [category, '시황', '정책'],
+    style: 'question',
+    isNewsBased: true,
+    newsSource: newsItem.source,
+    newsUrl: newsItem.url
+  };
+}
+
+// 키워드 추출 함수
+function extractKeywords(title) {
+  const keywords = [];
+  const keywordMap = {
+    '전세': '전세',
+    '월세': '월세',
+    '임대차': '임대차',
+    '보증금': '보증금',
+    '정책': '정책',
+    '금리': '금리',
+    '대출': '대출',
+    '투자': '투자',
+    '아파트': '아파트',
+    '오피스텔': '오피스텔',
+    '신축': '신축',
+    '리모델링': '리모델링',
+    '중개비': '중개비',
+    '계약': '계약',
+    '해지': '해지',
+    '인상': '인상',
+    '하락': '하락',
+    '상승': '상승'
+  };
+  
+  for (const [keyword, category] of Object.entries(keywordMap)) {
+    if (title.includes(keyword)) {
+      keywords.push(category);
+    }
+  }
+  
+  return keywords;
+}
+
+// 뉴스 카테고리 분류 함수
+function categorizeNews(keywords) {
+  if (keywords.includes('전세') || keywords.includes('월세')) return '시황';
+  if (keywords.includes('정책') || keywords.includes('금리')) return '정책';
+  if (keywords.includes('투자')) return '투자';
+  if (keywords.includes('계약') || keywords.includes('해지')) return '계약해지';
+  if (keywords.includes('보증금')) return '보증금';
+  if (keywords.includes('인상')) return '월세인상';
+  if (keywords.includes('아파트') || keywords.includes('오피스텔')) return '부동산시장';
+  if (keywords.includes('임대차')) return '임대시장';
+  
+  return '시황'; // 기본값
+}
 
 // 자연스러운 작성자 풀
 const authorPool = [
@@ -223,6 +356,39 @@ function generateDCContent(title, category) {
   return dcTemplates[Math.floor(Math.random() * dcTemplates.length)];
 }
 
+// 게시글 생성 함수
+async function createPost(postData) {
+  try {
+    const response = await fetch(`${process.env.SITE_BASE_URL || 'https://homeless-town.onrender.com'}/api/discussions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title: postData.title,
+        content: postData.content,
+        tags: postData.tags || [postData.category],
+        nickname: getRandomAuthor(),
+        password: 'auto123',
+        marketTrend: Math.random() > 0.5 ? 'up' : 'down'
+      }),
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      console.log(`✅ 게시글 생성 성공: ${postData.title}`);
+      return result.id || true;
+    } else {
+      const errorText = await response.text();
+      console.log(`❌ 게시글 생성 실패: ${postData.title} - ${errorText}`);
+      return false;
+    }
+  } catch (error) {
+    console.log(`❌ 게시글 생성 오류: ${postData.title} - ${error.message}`);
+    return false;
+  }
+}
+
 // 랜덤 작성자 선택
 function getRandomAuthor() {
   return authorPool[Math.floor(Math.random() * authorPool.length)];
@@ -285,15 +451,53 @@ async function createComment(postId) {
   }
 }
 
-// 개선된 자동 포스팅 함수
+// 개선된 자동 포스팅 함수 (뉴스 기반 업그레이드)
 async function improvedAutoPosting() {
-  console.log('🚀 개선된 자동 포스팅 시작...');
+  console.log('🚀 개선된 자동 포스팅 시작 (뉴스 기반 포함)...');
+  
+  // 뉴스 기반 포스팅 먼저 시도
+  let newsBasedPosts = 0;
+  try {
+    console.log('📰 최신 부동산 뉴스 가져오는 중...');
+    const newsItems = await fetchRealEstateNews();
+    
+    if (newsItems.length > 0) {
+      console.log(`📰 ${newsItems.length}개의 부동산 뉴스를 찾았습니다.`);
+      
+      // 최신 뉴스 3개로 토론글 생성
+      const selectedNews = newsItems.slice(0, 3);
+      
+      for (const newsItem of selectedNews) {
+        const newsPost = generateNewsBasedPost(newsItem);
+        console.log(`📰 뉴스 기반 토론글 생성: ${newsPost.title}`);
+        
+        const success = await createPost(newsPost);
+        if (success) {
+          newsBasedPosts++;
+          console.log(`✅ 뉴스 기반 포스팅 성공: ${newsPost.title}`);
+          
+          // 댓글도 생성
+          await createComment(success);
+        } else {
+          console.log(`❌ 뉴스 기반 포스팅 실패: ${newsPost.title}`);
+        }
+        
+        // 포스팅 간 간격
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    } else {
+      console.log('📰 부동산 뉴스를 찾을 수 없습니다. 일반 포스팅으로 진행합니다.');
+    }
+  } catch (error) {
+    console.log('📰 뉴스 API 오류:', error.message);
+    console.log('📰 일반 포스팅으로 진행합니다.');
+  }
   
   const categories = Object.keys(discussionTemplates);
   // 카테고리를 섞어서 같은 카테고리가 연속으로 나오지 않도록 함
   const shuffledCategories = shuffleArray(categories);
   
-  let successCount = 0;
+  let successCount = newsBasedPosts; // 뉴스 기반 포스팅 수를 포함
   let failCount = 0;
   let commentSuccessCount = 0;
   let commentFailCount = 0;
