@@ -380,10 +380,7 @@ export default function ForumPage() {
     return null
   }
 
-  const totalPages = Math.ceil(posts.length / postsPerPage)
-  const startIndex = (currentPage - 1) * postsPerPage
-  const endIndex = startIndex + postsPerPage
-  const currentPosts = posts.slice(startIndex, endIndex)
+  // totalPages는 이미 state로 관리됨
 
   return (
     <div className="min-h-screen bg-brand-bg">
