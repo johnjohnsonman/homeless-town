@@ -96,15 +96,15 @@ function getTagsForCategory(category) {
   return tagMap[category] || [category];
 }
 
-// 최신 부동산 뉴스 가져오기
+// 최신 부동산 뉴스 가져오기 (구체적인 키워드로 검색)
 async function fetchRealEstateNews() {
   try {
     const response = await axios.get(NEWS_API_URL, {
       params: {
-        q: '부동산 OR 전세 OR 월세 OR 임대차 OR 주택',
+        q: '부동산 OR 아파트 OR 전세 OR 빌라 OR 월세 OR "부동산 정책" OR "전세 대출" OR "월세 상한제" OR "임대차 3법" OR "청년 전세" OR "주택 공급" OR "부동산 시장" OR "전세가" OR "월세가" OR "임대료"',
         language: 'ko',
         sortBy: 'publishedAt',
-        pageSize: 10,
+        pageSize: 15,
         apiKey: NEWS_API_KEY
       }
     });
@@ -116,7 +116,7 @@ async function fetchRealEstateNews() {
   }
 }
 
-// 뉴스 기반 토론글 생성
+// 뉴스 기반 토론글 생성 (구체적이고 현실적으로)
 async function generateNewsBasedPost(newsItem) {
   try {
     const prompt = `
@@ -124,16 +124,20 @@ async function generateNewsBasedPost(newsItem) {
 
 뉴스 제목: ${newsItem.title}
 뉴스 내용: ${newsItem.description || newsItem.content || ''}
+뉴스 출처: ${newsItem.source?.name || ''}
+발행일: ${newsItem.publishedAt || ''}
 
 요구사항:
 1. 제목은 30자 이내로 작성 (뉴스 내용을 바탕으로 하지만 직접적인 뉴스 제목이 아닌 토론 주제로)
-2. 내용은 200-400자 정도로 작성
+2. 내용은 300-500자 정도로 작성
 3. 실제 무주택자/전세자/월세자의 관점에서 작성
-4. 다른 사용자들이 댓글을 달고 싶어할 만한 질문이나 의견 요청 포함
-5. 친근하고 공감대를 형성할 수 있는 톤으로 작성
-6. 한국어로 작성
-7. 이모지는 사용하지 마세요
-8. 뉴스 내용을 바탕으로 하지만 개인적인 경험이나 의견을 포함
+4. 뉴스의 구체적인 내용(수치, 지역, 정책명 등)을 포함
+5. 뉴스가 개인에게 미치는 실제적인 영향에 대해 언급
+6. 다른 사용자들이 댓글을 달고 싶어할 만한 구체적인 질문이나 의견 요청 포함
+7. 친근하지만 현실적인 톤으로 작성
+8. 한국어로 작성
+9. 이모지는 사용하지 마세요
+10. "어떻게 생각하시나요?" 같은 일반적인 질문보다는 구체적인 상황에 대한 의견을 요청
 
 응답 형식:
 제목: [제목]
@@ -144,8 +148,8 @@ async function generateNewsBasedPost(newsItem) {
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [{ role: "user", content: prompt }],
-      max_tokens: 600,
-      temperature: 0.8,
+      max_tokens: 800,
+      temperature: 0.7,
     });
 
     const response = completion.choices[0]?.message?.content || '';
@@ -170,35 +174,39 @@ async function generateNewsBasedPost(newsItem) {
   }
 }
 
-// AI 기반 자연스러운 댓글 생성
+// AI 기반 구체적이고 현실적인 댓글 생성
 async function generateAIComment(postContent, postTitle, commentCount = 3) {
   try {
     const prompt = `
-다음 토론글에 대한 자연스러운 댓글 ${commentCount}개를 작성해주세요:
+다음 토론글에 대한 구체적이고 현실적인 댓글 ${commentCount}개를 작성해주세요:
 
 제목: ${postTitle}
 내용: ${postContent}
 
 요구사항:
-1. 각 댓글은 20-80자 정도로 작성
+1. 각 댓글은 30-100자 정도로 작성
 2. 실제 무주택자/전세자/월세자의 관점에서 작성
-3. 다양한 의견과 경험담을 포함
-4. 친근하고 자연스러운 톤으로 작성
-5. 한국어로 작성
-6. 이모지는 사용하지 마세요
-7. 각 댓글은 서로 다른 관점이나 경험을 반영
+3. 구체적인 수치, 지역, 경험담을 포함
+4. 뉴스나 정책에 대한 구체적인 의견 제시
+5. 실제 상황에 대한 현실적인 조언이나 경험 공유
+6. 친근하지만 전문적인 톤으로 작성
+7. 한국어로 작성
+8. 이모지는 사용하지 마세요
+9. 각 댓글은 서로 다른 관점이나 구체적인 경험을 반영
+10. "공감합니다", "좋은 글입니다" 같은 일반적인 댓글 금지
+11. 구체적인 지역명, 금액, 정책명 등을 언급
 
 응답 형식:
-댓글1: [내용]
-댓글2: [내용]
-댓글3: [내용]
+댓글1: [구체적인 내용]
+댓글2: [구체적인 내용]
+댓글3: [구체적인 내용]
 `;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [{ role: "user", content: prompt }],
-      max_tokens: 400,
-      temperature: 0.9,
+      max_tokens: 600,
+      temperature: 0.8,
     });
 
     const response = completion.choices[0]?.message?.content || '';
@@ -216,9 +224,9 @@ async function generateAIComment(postContent, postTitle, commentCount = 3) {
   } catch (error) {
     console.log('AI 댓글 생성 오류:', error.message);
     return [
-      '정말 공감되는 글이네요',
-      '저도 비슷한 경험이 있어요',
-      '좋은 정보 감사합니다'
+      '서울 강남구에서 전세 구하는데 정말 어려워요',
+      '월세 50만원인데 올해 10% 올랐어요',
+      '청년 전세대출 신청했는데 승인까지 2주 걸렸습니다'
     ];
   }
 }
@@ -616,7 +624,7 @@ async function createAIComments(postId, postTitle, postContent) {
   }
 }
 
-// AI로 템플릿 기반 글을 자연스럽게 향상
+// AI로 템플릿 기반 글을 구체적이고 현실적으로 향상
 async function generateAIEnhancedPost(template, category) {
   try {
     const prompt = `
@@ -627,14 +635,17 @@ async function generateAIEnhancedPost(template, category) {
 
 요구사항:
 1. 제목은 30자 이내로 작성
-2. 내용은 200-400자 정도로 작성
+2. 내용은 300-500자 정도로 작성
 3. 실제 무주택자/전세자/월세자의 관점에서 작성
-4. 구체적인 경험이나 상황을 포함
-5. 다른 사용자들이 댓글을 달고 싶어할 만한 질문이나 의견 요청 포함
-6. 친근하고 공감대를 형성할 수 있는 톤으로 작성
-7. 한국어로 작성
-8. 이모지는 사용하지 마세요
-9. 자연스럽고 실제 사용자가 쓴 것처럼 작성
+4. 구체적인 수치, 지역, 금액, 정책명을 포함
+5. 실제 경험이나 상황을 구체적으로 묘사
+6. 다른 사용자들이 댓글을 달고 싶어할 만한 구체적인 질문이나 의견 요청 포함
+7. 친근하지만 현실적인 톤으로 작성
+8. 한국어로 작성
+9. 이모지는 사용하지 마세요
+10. 자연스럽고 실제 사용자가 쓴 것처럼 작성
+11. "어떻게 생각하시나요?" 같은 일반적인 질문보다는 구체적인 상황에 대한 의견을 요청
+12. 최신 부동산 시장 동향이나 정책 변화를 반영
 
 응답 형식:
 제목: [제목]
@@ -645,8 +656,8 @@ async function generateAIEnhancedPost(template, category) {
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [{ role: "user", content: prompt }],
-      max_tokens: 600,
-      temperature: 0.8,
+      max_tokens: 800,
+      temperature: 0.7,
     });
 
     const response = completion.choices[0]?.message?.content || '';
