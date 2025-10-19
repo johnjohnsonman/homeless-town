@@ -57,7 +57,7 @@ export default function PostListClient({
         tag: tag === 'all' ? 'all' : tag,
         sort,
         page: page.toString(),
-        pageSize: '25',
+        pageSize: '15',
       })
 
       const response = await fetch(`/api/posts?${params}`)

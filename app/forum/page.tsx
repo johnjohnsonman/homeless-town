@@ -79,7 +79,7 @@ export default function ForumPage() {
   const [totalPages, setTotalPages] = useState(1)
   const [totalPosts, setTotalPosts] = useState(0)
   const [loading, setLoading] = useState(true)
-  const postsPerPage = 25
+  const postsPerPage = 15
 
   // 실제 API 데이터 사용
   // API에서 데이터 가져오기
@@ -92,9 +92,9 @@ export default function ForumPage() {
         if (data.discussions) {
           setPosts(data.discussions)
         }
-        if (data.total !== undefined) {
-          setTotalPosts(data.total)
-          setTotalPages(Math.ceil(data.total / postsPerPage))
+        if (data.pagination && data.pagination.total !== undefined) {
+          setTotalPosts(data.pagination.total)
+          setTotalPages(data.pagination.pages)
         }
       } catch (error) {
         console.error('Failed to fetch posts:', error)
