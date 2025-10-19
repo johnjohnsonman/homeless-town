@@ -488,18 +488,18 @@ export default function ForumPage() {
             </div>
 
             {/* Posts List */}
-            <div className="space-y-1">
+            <div className="space-y-2">
               {loading ? (
                 // Loading skeletons
                 Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="bg-brand-card rounded-lg shadow-sm border border-brand-border p-3 animate-pulse mb-2">
+                  <div key={i} className="bg-brand-card rounded-lg shadow-sm border border-brand-border p-3 animate-pulse">
                     <div className="h-4 bg-brand-border rounded mb-1"></div>
                     <div className="h-3 bg-brand-border rounded w-3/4"></div>
                   </div>
                 ))
               ) : (
                 posts.map((post) => (
-                  <div key={post.id} className="bg-brand-card rounded-lg shadow-sm border border-brand-border hover:shadow-md transition-all duration-200 mb-2">
+                  <div key={post.id} className="bg-brand-card rounded-lg shadow-sm border border-brand-border hover:shadow-md transition-all duration-200">
                     <div className="p-3">
                       {/* Post Header */}
                       <div className="flex items-start justify-between mb-1">
