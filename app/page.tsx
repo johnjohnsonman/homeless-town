@@ -1,10 +1,121 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Navigation from '../components/Navigation'
-import { MessageCircle, TrendingUp, Clock, ThumbsUp, Eye, Star, Plus, Search, Filter, Tag as TagIcon, Home as HomeIcon, FileText, Heart, Download, MapPin, AlertCircle, CheckCircle } from 'lucide-react'
+import { MessageCircle, TrendingUp, Clock, ThumbsUp, Eye, Star, Plus, Search, Filter, Tag as TagIcon, Home as HomeIcon, FileText, Heart, Download, MapPin, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
+
+interface PopularDiscussion {
+  id: number
+  title: string
+  slug: string
+  nickname: string
+  upvotes: number
+  downvotes: number
+  commentCount: number
+  views?: number
+  tags: string[]
+  createdAt: string
+}
+
+interface HousingPost {
+  id: number
+  title: string
+  location?: string
+  budget?: string
+  type?: string
+  urgent?: boolean
+  createdAt: string
+}
+
+interface ContractGuide {
+  id: number
+  title: string
+  summary: string
+  category: string
+}
+
+interface CommunityStats {
+  totalUsers: number
+  todayPosts: number
+  successMatches: number
+  totalDownloads: number
+}
 
 export default function Home() {
+  const [popularDiscussions, setPopularDiscussions] = useState<PopularDiscussion[]>([])
+  const [housingPosts, setHousingPosts] = useState<HousingPost[]>([])
+  const [contractGuides, setContractGuides] = useState<ContractGuide[]>([])
+  const [stats, setStats] = useState<CommunityStats>({
+    totalUsers: 0,
+    todayPosts: 0,
+    successMatches: 0,
+    totalDownloads: 0
+  })
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        
+        // 인기 토론글 가져오기
+        const discussionsRes = await fetch('/api/popular-discussions')
+        if (discussionsRes.ok) {
+          const discussionsData = await discussionsRes.json()
+          setPopularDiscussions(discussionsData.discussions?.slice(0, 3) || [])
+        }
+
+        // 최신 주거 게시판 가져오기
+        const housingRes = await fetch('/api/housing-posts?limit=2')
+        if (housingRes.ok) {
+          const housingData = await housingRes.json()
+          setHousingPosts(housingData.posts?.slice(0, 2) || [])
+        }
+
+        // 계약 가이드 가져오기
+        const guidesRes = await fetch('/api/contract-guides?limit=4')
+        if (guidesRes.ok) {
+          const guidesData = await guidesRes.json()
+          setContractGuides(guidesData.guides?.slice(0, 4) || [])
+        }
+
+        // 통계 데이터 가져오기
+        const statsRes = await fetch('/api/stats')
+        if (statsRes.ok) {
+          const statsData = await statsRes.json()
+          setStats(statsData.stats || {
+            totalUsers: 0,
+            todayPosts: 0,
+            successMatches: 0,
+            totalDownloads: 0
+          })
+        }
+      } catch (error) {
+        console.error('데이터 가져오기 실패:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  const getTimeAgo = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
+    
+    if (diffInMinutes < 1) return '방금 전'
+    if (diffInMinutes < 60) return `${diffInMinutes}분 전`
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}시간 전`
+    return `${Math.floor(diffInMinutes / 1440)}일 전`
+  }
+
+  const formatNumber = (num: number) => {
+    return num.toLocaleString('ko-KR')
+  }
+
   return (
     <div className="min-h-screen bg-brand-bg">
       <Navigation />
@@ -79,61 +190,51 @@ export default function Home() {
               </div>
 
               <div className="space-y-3">
-                {[
-                  {
-                    id: 1,
-                    title: "보증금 반환 받은 경험 공유",
-                    author: "임차인A",
-                    views: 1247,
-                    comments: 89,
-                    likes: 156,
-                    category: "보증금"
-                  },
-                  {
-                    id: 2,
-                    title: "집주인과 갈등 해결 방법",
-                    author: "임차인B",
-                    views: 892,
-                    comments: 67,
-                    likes: 134,
-                    category: "분쟁해결"
-                  },
-                  {
-                    id: 3,
-                    title: "월세 vs 전세 어떤 게 좋을까요?",
-                    author: "임차인C",
-                    views: 567,
-                    comments: 45,
-                    likes: 78,
-                    category: "계약"
-                  }
-                ].map((discussion) => (
-                  <div key={discussion.id} className="p-4 rounded-xl hover:bg-brand-surface transition-colors border border-brand-border">
-                    <div className="flex items-start justify-between mb-3">
-                      <h3 className="font-semibold text-brand-ink flex-1">{discussion.title}</h3>
-                      <span className="px-3 py-1 bg-brand-surface text-brand-accent text-xs rounded-full font-semibold ml-2">
-                        {discussion.category}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm text-brand-muted">
-                      <span className="font-medium">작성자: {discussion.author}</span>
-                      <div className="flex items-center space-x-4">
-                        <span className="flex items-center">
-                          <TrendingUp className="w-4 h-4 mr-1 text-brand-accent" />
-                          {discussion.views}
-                        </span>
-                        <span className="flex items-center">
-                          <MessageCircle className="w-4 h-4 mr-1 text-brand-accent" />
-                          {discussion.comments}
-                        </span>
-                        <span className="flex items-center">
-                          <ThumbsUp className="w-4 h-4 mr-1 text-brand-accent" />
-                          {discussion.likes}
-                        </span>
-                      </div>
-                    </div>
+                {loading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-brand-accent" />
                   </div>
-                ))}
+                ) : popularDiscussions.length > 0 ? (
+                  popularDiscussions.map((discussion) => (
+                    <Link 
+                      key={discussion.id} 
+                      href={`/discussions/${discussion.id}`}
+                      className="block p-4 rounded-xl hover:bg-brand-surface transition-colors border border-brand-border"
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <h3 className="font-semibold text-brand-ink flex-1">{discussion.title}</h3>
+                        {discussion.tags && discussion.tags.length > 0 && (
+                          <span className="px-3 py-1 bg-brand-surface text-brand-accent text-xs rounded-full font-semibold ml-2">
+                            {discussion.tags[0]}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between text-sm text-brand-muted">
+                        <span className="font-medium">작성자: {discussion.nickname || '익명'}</span>
+                        <div className="flex items-center space-x-4">
+                          {discussion.views !== undefined && (
+                            <span className="flex items-center">
+                              <TrendingUp className="w-4 h-4 mr-1 text-brand-accent" />
+                              {formatNumber(discussion.views)}
+                            </span>
+                          )}
+                          <span className="flex items-center">
+                            <MessageCircle className="w-4 h-4 mr-1 text-brand-accent" />
+                            {discussion.commentCount || 0}
+                          </span>
+                          <span className="flex items-center">
+                            <ThumbsUp className="w-4 h-4 mr-1 text-brand-accent" />
+                            {discussion.upvotes - discussion.downvotes}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-brand-muted">
+                    아직 인기 토론글이 없습니다.
+                  </div>
+                )}
               </div>
 
               <div className="mt-6 pt-4 border-t border-brand-border">
@@ -161,46 +262,47 @@ export default function Home() {
               </div>
 
               <div className="space-y-3">
-                {[
-                  {
-                    id: 1,
-                    title: "강남역 근처 원룸 구합니다",
-                    location: "강남구",
-                    budget: "월 80만원",
-                    type: "원룸",
-                    time: "10분 전",
-                    urgent: true
-                  },
-                  {
-                    id: 2,
-                    title: "홍대입구역 1인가구 월세",
-                    location: "마포구",
-                    budget: "월 60만원",
-                    type: "원룸",
-                    time: "30분 전",
-                    urgent: false
-                  }
-                ].map((post) => (
-                  <div key={post.id} className="flex items-center justify-between p-4 rounded-xl hover:bg-brand-surface transition-colors border border-brand-border">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <h3 className="font-semibold text-brand-ink">{post.title}</h3>
-                        {post.urgent && (
-                          <span className="px-2 py-1 bg-brand-accent text-white text-xs rounded-full font-semibold">긴급</span>
-                        )}
-                      </div>
-                      <div className="flex items-center space-x-4 text-sm text-brand-muted">
-                        <span className="flex items-center">
-                          <MapPin className="w-4 h-4 mr-1 text-brand-accent" />
-                          {post.location}
-                        </span>
-                        <span className="font-medium text-brand-accent700">{post.budget}</span>
-                        <span className="bg-brand-surface px-2 py-1 rounded text-xs">{post.type}</span>
-                      </div>
-                    </div>
-                    <div className="text-xs text-brand-muted font-medium">{post.time}</div>
+                {loading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-brand-accent" />
                   </div>
-                ))}
+                ) : housingPosts.length > 0 ? (
+                  housingPosts.map((post) => (
+                    <Link
+                      key={post.id}
+                      href={`/housing-board`}
+                      className="flex items-center justify-between p-4 rounded-xl hover:bg-brand-surface transition-colors border border-brand-border"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <h3 className="font-semibold text-brand-ink">{post.title}</h3>
+                          {post.urgent && (
+                            <span className="px-2 py-1 bg-brand-accent text-white text-xs rounded-full font-semibold">긴급</span>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-4 text-sm text-brand-muted">
+                          {post.location && (
+                            <span className="flex items-center">
+                              <MapPin className="w-4 h-4 mr-1 text-brand-accent" />
+                              {post.location}
+                            </span>
+                          )}
+                          {post.budget && (
+                            <span className="font-medium text-brand-accent700">{post.budget}</span>
+                          )}
+                          {post.type && (
+                            <span className="bg-brand-surface px-2 py-1 rounded text-xs">{post.type}</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-xs text-brand-muted font-medium">{getTimeAgo(post.createdAt)}</div>
+                    </Link>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-brand-muted">
+                    아직 주거 게시글이 없습니다.
+                  </div>
+                )}
               </div>
 
               <div className="mt-6 pt-4 border-t border-brand-border">
@@ -228,17 +330,26 @@ export default function Home() {
               </div>
 
               <div className="space-y-3">
-                {[
-                  "표준 임대차 계약서 작성법",
-                  "보증금 반환 조건과 절차",
-                  "월세 인상 제한 규정",
-                  "계약 해지 시 주의사항"
-                ].map((guide, index) => (
-                  <div key={index} className="p-4 rounded-xl hover:bg-brand-surface transition-colors border border-brand-border">
-                    <h3 className="font-semibold text-brand-ink">{guide}</h3>
-                    <p className="text-sm text-brand-muted mt-1">임차인을 위한 상세 가이드</p>
+                {loading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-brand-accent" />
                   </div>
-                ))}
+                ) : contractGuides.length > 0 ? (
+                  contractGuides.map((guide) => (
+                    <Link
+                      key={guide.id}
+                      href={`/contract-guide/${guide.id}`}
+                      className="block p-4 rounded-xl hover:bg-brand-surface transition-colors border border-brand-border"
+                    >
+                      <h3 className="font-semibold text-brand-ink">{guide.title}</h3>
+                      <p className="text-sm text-brand-muted mt-1">{guide.summary || '임차인을 위한 상세 가이드'}</p>
+                    </Link>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-brand-muted">
+                    아직 계약 가이드가 없습니다.
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -365,24 +476,30 @@ export default function Home() {
             {/* Community Stats */}
             <div className="bg-brand-card rounded-2xl shadow-soft p-6 border border-brand-border">
               <h3 className="text-lg font-bold text-brand-ink mb-4">커뮤니티 현황</h3>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-brand-muted">총 회원수</span>
-                  <span className="font-bold text-brand-accent">12,847명</span>
+              {loading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-brand-accent" />
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-brand-muted">오늘 게시글</span>
-                  <span className="font-bold text-brand-accent">156개</span>
+              ) : (
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-brand-muted">총 회원수</span>
+                    <span className="font-bold text-brand-accent">{formatNumber(stats.totalUsers)}명</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-brand-muted">오늘 게시글</span>
+                    <span className="font-bold text-brand-accent">{formatNumber(stats.todayPosts)}개</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-brand-muted">성공 매칭</span>
+                    <span className="font-bold text-brand-accent">{formatNumber(stats.successMatches)}건</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-brand-muted">자료 다운로드</span>
+                    <span className="font-bold text-brand-accent">{formatNumber(stats.totalDownloads)}회</span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-brand-muted">성공 매칭</span>
-                  <span className="font-bold text-brand-accent">2,341건</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-brand-muted">자료 다운로드</span>
-                  <span className="font-bold text-brand-accent">18,921회</span>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
